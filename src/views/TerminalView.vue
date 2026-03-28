@@ -31,20 +31,59 @@
     </div>
 
     <TerminalPanel :serverId="selectedServerId" />
-    <QuickCommands />
+
+    <div class="quick-cmds-bar">
+      <div class="quick-cmds-label">quick commands</div>
+      <div class="quick-cmds-list">
+        <button
+          v-for="cmd in quickCommands"
+          :key="cmd.id"
+          class="card-btn quick-cmd-btn"
+          :title="cmd.command"
+          @click="injectCmd(cmd.command)"
+        >
+          <span v-if="cmd.icon" class="qcb-icon">{{ cmd.icon }}</span>
+          {{ cmd.label }}
+          <span
+            v-if="cmd.scope === 'server'"
+            class="qcb-server-dot"
+            title="Server-specific command"
+          >
+            ●
+          </span>
+        </button>
+      </div>
+
+      <button
+        class="card-btn qcm-open-btn"
+        @click="managerOpen = true"
+        title="Manage quick commands"
+      >
+        ⚙ manage
+      </button>
+    </div>
+
+    <QuickCommandsManager v-model="managerOpen" />
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useServersStore } from "../stores/servers";
+import { useQuickCommandsStore } from "../stores/quickCommands";
 import TerminalPanel from "../components/terminal/TerminalPanel.vue";
-import QuickCommands from "../components/terminal/QuickCommands.vue";
+import QuickCommandsManager from "../components/terminal/QuickCommandsManager.vue";
 
 const route = useRoute();
 const serversStore = useServersStore();
+const qcStore = useQuickCommandsStore();
 const selectedServerId = ref(0);
+const managerOpen = ref(false);
+
+const quickCommands = computed(() =>
+  qcStore.forServer(selectedServerId.value || null),
+);
 
 // Set selected server from query param or default to first server
 watch(
@@ -68,6 +107,28 @@ watch(
   },
   { deep: true, immediate: true },
 );
+
+watch(
+  () => selectedServerId.value,
+  async (id) => {
+    if (id) {
+      await qcStore.fetchForServer(id);
+      return;
+    }
+
+    await qcStore.fetchAll();
+  },
+  { immediate: true },
+);
+
+function injectCmd(cmd) {
+  const input = document.querySelector(".term-input");
+  if (input) {
+    input.value = cmd;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.focus();
+  }
+}
 </script>
 
 <style scoped>
@@ -135,5 +196,71 @@ watch(
 .form-select:focus {
   outline: none;
   border-color: var(--accent);
+}
+
+.card-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.12s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-btn:hover {
+  border-color: var(--border2);
+  background: var(--bg3);
+  color: var(--text);
+}
+
+.quick-cmds-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.quick-cmds-label {
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.quick-cmds-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+
+.qcb-icon {
+  font-size: 12px;
+}
+
+.qcb-server-dot {
+  font-size: 6px;
+  color: var(--accent);
+  vertical-align: super;
+}
+
+.qcm-open-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  border-color: var(--border2);
+}
+
+.qcm-open-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 </style>
