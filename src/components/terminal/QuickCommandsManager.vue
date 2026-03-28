@@ -62,7 +62,19 @@
             @dragend="onDragEnd"
           >
             <span class="drag-handle" title="Drag to reorder">⠿</span>
-            <span class="cmd-icon">{{ cmd.icon || "⚡" }}</span>
+
+            <div class="cmd-icon-wrap">
+              <span class="cmd-icon">{{ cmd.icon || "⚡" }}</span>
+              <span
+                class="cmd-scope-dot"
+                :class="cmd.scope === 'server' ? 'dot-server' : 'dot-all'"
+                :title="
+                  cmd.scope === 'all'
+                    ? 'All servers'
+                    : cmd.server?.name || 'Specific server'
+                "
+              ></span>
+            </div>
 
             <div class="cmd-info">
               <div class="cmd-label">{{ cmd.label }}</div>
@@ -431,6 +443,34 @@ function onDragEnd() {
   flex-shrink: 0;
 }
 
+.cmd-icon-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cmd-scope-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid var(--bg3);
+}
+
+.cmd-scope-dot.dot-all {
+  background: var(--text3);
+}
+
+.cmd-scope-dot.dot-server {
+  background: var(--accent);
+}
+
 .cmd-info {
   flex: 1;
   min-width: 0;
@@ -563,5 +603,151 @@ function onDragEnd() {
   cursor: pointer;
   font-family: var(--font-mono);
   font-size: 11px;
+}
+
+@media (min-width: 768px) {
+  .cmd-scope-dot {
+    display: none;
+  }
+
+  .scope-badge,
+  .system-badge {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 767px) {
+  .qcm-overlay {
+    align-items: flex-end;
+  }
+
+  .qcm-overlay.open {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  .qcm-drawer {
+    width: 100% !important;
+    max-width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    top: auto;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    height: 85vh;
+    transform: translateY(100%);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .qcm-drawer.open {
+    transform: translateY(0);
+  }
+
+  .qcm-drawer::before {
+    content: "";
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: var(--border2);
+    border-radius: 2px;
+    margin: 10px auto 0;
+    flex-shrink: 0;
+  }
+
+  .qcm-header {
+    padding: 14px 16px;
+  }
+
+  .qcm-title {
+    font-size: 14px;
+  }
+
+  .qcm-tabs {
+    padding: 8px 12px;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+
+  .qcm-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .qcm-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: 10px;
+    padding: 5px 10px;
+  }
+
+  .tab-count {
+    font-size: 9px;
+  }
+
+  .qcm-add-btn {
+    font-size: 12px;
+    padding: 10px;
+  }
+
+  .qcm-list {
+    padding: 6px 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .qcm-item {
+    padding: 10px 10px;
+    gap: 8px;
+  }
+
+  .drag-handle {
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  .cmd-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cmd-label {
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .cmd-command {
+    font-size: 9px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .scope-badge,
+  .system-badge {
+    display: none;
+  }
+
+  .cmd-actions {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .cmd-action-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+  }
+
+  .qcm-footer-note {
+    font-size: 9px;
+    padding: 8px 12px;
+  }
 }
 </style>

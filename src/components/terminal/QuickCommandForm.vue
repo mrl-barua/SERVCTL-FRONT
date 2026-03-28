@@ -370,4 +370,51 @@ async function handleSubmit() {
   margin-top: 4px;
   display: block;
 }
+
+@media (max-width: 767px) {
+  .qcf-modal {
+    width: calc(100% - 24px);
+    max-width: 100%;
+    margin: 12px;
+    padding: 18px 16px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .scope-toggle {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .scope-opt {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .cmd-preview {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .preview-scope {
+    margin-left: 0;
+    width: 100%;
+    font-size: 9px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .modal-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
 </style>

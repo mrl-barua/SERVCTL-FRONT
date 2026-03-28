@@ -350,19 +350,24 @@ function dismissBanner() {
 :deep(.term-input-row) {
   display: flex;
   align-items: center;
-  gap: 8px;
-  overflow: hidden;
+  gap: 6px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  background: #0a0c10;
   min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 :deep(.term-prompt-label) {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--accent);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 40%;
+  max-width: 30%;
   min-width: 0;
 }
 
@@ -376,7 +381,17 @@ function dismissBanner() {
   font-size: 12px;
   color: var(--text);
   caret-color: var(--accent);
-  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:deep(.term-run-btn) {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 8px;
+  white-space: nowrap;
 }
 
 :deep(.terminal-bar) {
@@ -437,8 +452,17 @@ function dismissBanner() {
   }
 
   :deep(.term-prompt-label) {
-    max-width: 35%;
+    max-width: 28%;
+    font-size: 10px;
+  }
+
+  :deep(.term-input) {
     font-size: 11px;
+  }
+
+  :deep(.term-run-btn) {
+    font-size: 9px;
+    padding: 4px 6px;
   }
 
   :deep(.term-title) {
