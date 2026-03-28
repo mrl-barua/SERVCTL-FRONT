@@ -337,4 +337,34 @@ function dismissBanner() {
   border-color: var(--accent);
   color: var(--accent);
 }
+
+@media (max-width: 767px) {
+  .quick-cmds-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .quick-cmds-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .quick-cmd-btn {
+    flex-shrink: 0;
+  }
+
+  .qcm-open-btn {
+    margin-left: 0;
+    width: 100%;
+    text-align: center;
+  }
+
+  :deep(.term-body) {
+    min-height: 180px;
+    max-height: 240px;
+  }
+}
 </style>

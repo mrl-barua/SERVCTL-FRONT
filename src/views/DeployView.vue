@@ -16,7 +16,7 @@
         <code>npm run deploy</code>
       </div>
 
-      <button class="btn-secondary es-cta" @click="$router.push('/')">
+      <button class="modal-btn es-cta" @click="$router.push('/')">
         ← Go to Overview
       </button>
     </div>
@@ -120,5 +120,44 @@ onBeforeUnmount(() => {
 
 .es-cta {
   margin-top: 4px;
+}
+
+.modal-btn {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 8px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.modal-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 767px) {
+  .empty-state-card {
+    margin: 16px;
+    padding: 20px 16px;
+    max-width: 100%;
+  }
+
+  .es-title {
+    font-size: 16px;
+  }
+
+  .es-hint {
+    font-size: 10px;
+    word-break: break-word;
+  }
+
+  .es-hint code {
+    word-break: break-all;
+    white-space: pre-wrap;
+  }
 }
 </style>

@@ -84,4 +84,41 @@ import LogViewer from "../components/logs/LogViewer.vue";
   margin-bottom: 2px;
   padding-bottom: 2px;
 }
+
+@media (max-width: 767px) {
+  .logs-view :deep(.log-toolbar) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .logs-view :deep(.log-toolbar > *) {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .logs-view :deep(.log-container) {
+    font-size: 10px;
+    padding: 8px 10px;
+  }
+
+  .logs-view :deep(.log-ts) {
+    min-width: 80px;
+    font-size: 9px;
+  }
+
+  .logs-view :deep(.log-entry) {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .logs-view :deep(.log-msg) {
+    width: 100%;
+    padding-left: 0;
+  }
+
+  .logs-view :deep(.tb-btn) {
+    width: calc(50% - 4px);
+  }
+}
 </style>

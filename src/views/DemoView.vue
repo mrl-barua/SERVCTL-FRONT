@@ -85,92 +85,43 @@
         <div class="content">
           <section v-if="state.view === 'overview'">
             <div class="stats-grid">
-              <div class="stat-card">
-                <div class="stat-label">total servers</div>
-                <div class="stat-value">{{ counts.total }}</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-label">online</div>
-                <div class="stat-value">{{ counts.online }}</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-label">offline</div>
-                <div class="stat-value">{{ counts.offline }}</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-label">unknown</div>
-                <div class="stat-value">{{ counts.unknown }}</div>
-              </div>
+              <StatCard
+                label="total servers"
+                :value="counts.total"
+                :sub-label="`across ${environmentCount} environments`"
+              />
+              <StatCard
+                label="online"
+                :value="counts.online"
+                color="green"
+                :sub-label="`${onlinePercent}% of fleet`"
+                :progress="onlinePercent"
+              />
+              <StatCard
+                label="offline"
+                :value="counts.offline"
+                color="red"
+                :sub-label="counts.offline === 0 ? 'all clear' : `${counts.offline} need attention`"
+                :progress="counts.offline === 0 ? 100 : offlinePercent"
+                :progress-color="counts.offline === 0 ? 'green' : 'red'"
+              />
+              <StatCard
+                label="unknown"
+                :value="counts.unknown"
+                color="yellow"
+                :sub-label="counts.unknown === 0 ? 'all resolved' : 'ping to resolve'"
+                :progress="unknownPercent"
+              />
             </div>
 
             <div class="cards-grid">
-              <article
-                v-for="server in state.servers"
+              <ServerCard
+                v-for="server in demoOverviewServers"
                 :key="server.id"
-                class="server-card"
-                :class="`env-${server.environment}`"
-              >
-                <div class="card-top">
-                  <div>
-                    <div class="card-name">{{ server.name }}</div>
-                    <div class="card-host">
-                      {{ server.user }}@{{ server.host }}:{{ server.port }}
-                    </div>
-                  </div>
-                  <span class="env-badge">{{ server.environment }}</span>
-                </div>
-
-                <div class="card-status">
-                  <span
-                    class="status-dot"
-                    :class="`status-${server.status}`"
-                  ></span>
-                  <span class="status-text">{{ server.status }}</span>
-                  <span>uptime {{ server.uptime }}%</span>
-                </div>
-
-                <div class="uptime">
-                  <span :style="{ width: `${server.uptime}%` }"></span>
-                </div>
-
-                <div class="actions">
-                  <button
-                    class="card-btn"
-                    type="button"
-                    @click="openDemoGate(sshMsg(server.name))"
-                  >
-                    SSH
-                  </button>
-                  <button
-                    class="card-btn"
-                    type="button"
-                    @click="copySsh(server)"
-                  >
-                    copy cmd
-                  </button>
-                  <button
-                    class="card-btn"
-                    type="button"
-                    @click="openDemoGate()"
-                  >
-                    deploy
-                  </button>
-                  <button
-                    class="card-btn"
-                    type="button"
-                    @click="switchToLogs(server.id)"
-                  >
-                    logs
-                  </button>
-                  <button
-                    class="card-btn"
-                    type="button"
-                    @click="openDemoGate()"
-                  >
-                    delete
-                  </button>
-                </div>
-              </article>
+                :server="server"
+                :demo-mode="true"
+                @demo-gate="openDemoGate"
+              />
             </div>
           </section>
 
@@ -313,6 +264,8 @@ import {
   ref,
 } from "vue";
 import { RouterLink } from "vue-router";
+import StatCard from "../components/servers/StatCard.vue";
+import ServerCard from "../components/servers/ServerCard.vue";
 
 const navItems = [
   { id: "overview", label: "Overview" },
@@ -468,6 +421,38 @@ const counts = computed(() => ({
   offline: state.servers.filter((s) => s.status === "offline").length,
   unknown: state.servers.filter((s) => s.status === "unknown").length,
 }));
+
+const environmentCount = computed(
+  () => new Set(state.servers.map((server) => server.environment)).size,
+);
+
+const percentOf = (count, total) => {
+  if (total <= 0) return 0;
+  return Math.round((count / total) * 100);
+};
+
+const onlinePercent = computed(() => percentOf(counts.value.online, counts.value.total));
+const offlinePercent = computed(() =>
+  percentOf(counts.value.offline, counts.value.total),
+);
+const unknownPercent = computed(() =>
+  percentOf(counts.value.unknown, counts.value.total),
+);
+
+const demoOverviewServers = computed(() =>
+  state.servers.map((server, index) => ({
+    id: Number(String(server.id).split("-").pop()) || index + 1,
+    name: server.name,
+    host: server.host,
+    user: server.user,
+    port: server.port,
+    env: server.environment,
+    status: server.status,
+    uptime: server.uptime,
+    notes: "",
+    deploy: `deploy/${server.environment}.yml`,
+  })),
+);
 
 const viewTitle = computed(() => {
   if (state.view === "overview") return "Overview";
@@ -889,8 +874,6 @@ onBeforeUnmount(() => {
   margin-bottom: 16px;
 }
 
-.stat-card,
-.server-card,
 .terminal-box,
 .logs-box,
 .deploy-card {
@@ -899,92 +882,10 @@ onBeforeUnmount(() => {
   background: var(--bg2);
 }
 
-.stat-card {
-  padding: 14px;
-}
-
-.stat-label {
-  color: var(--text3);
-  font-size: 10px;
-  text-transform: uppercase;
-}
-
-.stat-value {
-  margin-top: 8px;
-  font-size: 21px;
-  font-weight: 600;
-}
-
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   gap: 10px;
-}
-
-.server-card {
-  padding: 14px;
-}
-
-.card-top {
-  display: flex;
-  gap: 8px;
-}
-
-.card-name {
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.card-host {
-  font-size: 10px;
-  color: var(--text3);
-}
-
-.env-badge {
-  margin-left: auto;
-  font-size: 9px;
-  border: 1px solid var(--border2);
-  border-radius: 999px;
-  padding: 2px 8px;
-  color: var(--text2);
-}
-
-.card-status {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 11px;
-}
-
-.uptime {
-  margin-top: 8px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--bg4);
-}
-
-.uptime span {
-  display: block;
-  height: 100%;
-  background: var(--green);
-}
-
-.actions {
-  margin-top: 10px;
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.card-btn {
-  border: 1px solid var(--border2);
-  border-radius: var(--radius);
-  background: var(--bg4);
-  color: var(--text2);
-  font-size: 10px;
-  padding: 4px 9px;
-  cursor: pointer;
 }
 
 .terminal-toolbar,

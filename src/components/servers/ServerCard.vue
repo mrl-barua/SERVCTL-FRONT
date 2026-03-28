@@ -41,12 +41,21 @@
 
     <div class="card-actions">
       <router-link
+        v-if="!demoMode"
         :to="{ name: 'terminal', query: { serverId: server.id } }"
         class="card-btn ssh"
         :title="`Open SSH for ${server.user}@${server.host}:${server.port}`"
       >
         ⌨ SSH
       </router-link>
+      <button
+        v-else
+        class="card-btn ssh"
+        :title="`Open SSH for ${server.user}@${server.host}:${server.port}`"
+        @click="handleDemoAction('SSH is disabled in demo mode. Sign up and self-host to run live terminal commands.')"
+      >
+        ⌨ SSH
+      </button>
       <button class="card-btn logs" @click="handleLogs">≡ logs</button>
       <button
         v-if="server.deploy"
@@ -81,6 +90,16 @@
       @close="closeEditModal"
       @update="handleUpdateServer"
     />
+
+    <ConfirmModal
+      v-model="showDeleteConfirm"
+      title="Delete server?"
+      message="This will permanently remove the server and all associated data. This cannot be undone."
+      :server-name="server.name"
+      confirm-label="Delete Server"
+      :loading="deleting"
+      @confirm="handleDeleteConfirmed"
+    />
   </div>
 </template>
 
@@ -89,6 +108,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useServersStore } from "../../stores/servers";
 import { useToastStore } from "../../stores/toast";
+import ConfirmModal from "../common/ConfirmModal.vue";
 import AddServerModal from "./AddServerModal.vue";
 
 const props = defineProps({
@@ -96,12 +116,20 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  demoMode: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+const emit = defineEmits(["demo-gate"]);
 
 const router = useRouter();
 const serversStore = useServersStore();
 const toastStore = useToastStore();
 const showEditModal = ref(false);
+const showDeleteConfirm = ref(false);
+const deleting = ref(false);
 
 const envLabels = {
   prod: "Production",
@@ -118,14 +146,35 @@ const envIcons = {
 };
 
 function handleDeploy() {
+  if (props.demoMode) {
+    handleDemoAction(
+      `Deploy is disabled in demo mode for ${props.server.name}. Sign up and self-host to run deployments.`,
+    );
+    return;
+  }
+
   router.push({ name: "deploy", query: { serverId: props.server.id } });
 }
 
 function handleLogs() {
+  if (props.demoMode) {
+    handleDemoAction(
+      `Live logs are disabled in demo mode for ${props.server.name}. Sign up and self-host to access log streams.`,
+    );
+    return;
+  }
+
   router.push({ name: "logs", query: { serverId: props.server.id } });
 }
 
 function openEditModal() {
+  if (props.demoMode) {
+    handleDemoAction(
+      `Editing ${props.server.name} is disabled in demo mode. Sign up and self-host to edit servers.`,
+    );
+    return;
+  }
+
   showEditModal.value = true;
 }
 
@@ -148,11 +197,23 @@ async function handleUpdateServer(serverData) {
 }
 
 async function handleDelete() {
-  const confirmed = window.confirm(`Delete server "${props.server.name}"?`);
-  if (!confirmed) return;
+  if (props.demoMode) {
+    emit(
+      "demo-gate",
+      `Deleting ${props.server.name} is disabled in demo mode. Sign up and self-host SERVCTL to perform destructive actions.`,
+    );
+    return;
+  }
+
+  showDeleteConfirm.value = true;
+}
+
+async function handleDeleteConfirmed() {
+  deleting.value = true;
 
   try {
     await serversStore.removeServer(props.server.id);
+    showDeleteConfirm.value = false;
     toastStore.showToast(`Server "${props.server.name}" deleted`, "success");
   } catch (error) {
     const message = error?.response?.data?.message || "Failed to delete server";
@@ -160,7 +221,13 @@ async function handleDelete() {
       Array.isArray(message) ? message.join(", ") : message,
       "error",
     );
+  } finally {
+    deleting.value = false;
   }
+}
+
+function handleDemoAction(message) {
+  emit("demo-gate", message);
 }
 </script>
 

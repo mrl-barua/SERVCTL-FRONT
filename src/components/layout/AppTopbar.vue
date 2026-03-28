@@ -1,8 +1,12 @@
 <template>
   <div class="topbar">
+    <button v-if="isMobile" class="menu-toggle" @click="$emit('toggle-sidebar')">
+      ☰
+    </button>
+
     <div class="topbar-title">{{ routeTitle }}</div>
     <div class="topbar-actions">
-      <button class="tb-btn" @click="handlePingAll">ping all</button>
+      <button class="tb-btn ping-btn" @click="handlePingAll"><span>ping all</span></button>
       <button class="tb-btn primary" @click="openAddModal">+ add server</button>
       <button class="tb-btn" @click="handleLogout">logout</button>
     </div>
@@ -22,6 +26,15 @@ import { useServersStore } from "../../stores/servers";
 import { useAuthStore } from "../../stores/auth";
 import { useToastStore } from "../../stores/toast";
 import AddServerModal from "../servers/AddServerModal.vue";
+
+defineProps({
+  isMobile: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+defineEmits(["toggle-sidebar"]);
 
 const route = useRoute();
 const router = useRouter();
@@ -106,6 +119,10 @@ function handleLogout() {
   gap: 8px;
 }
 
+.menu-toggle {
+  display: none;
+}
+
 .tb-btn {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -132,5 +149,57 @@ function handleLogout() {
 .tb-btn.primary:hover {
   background: var(--accent2);
   border-color: var(--accent2);
+}
+
+@media (max-width: 767px) {
+  .topbar {
+    height: auto;
+    min-height: 52px;
+    padding: 8px 12px;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text2);
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+
+  .topbar-title {
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .topbar-actions {
+    flex-shrink: 0;
+    display: flex;
+    gap: 6px;
+  }
+
+  .tb-btn:not(.primary) {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  .tb-btn.ping-btn::after {
+    content: "⟳";
+  }
+
+  .tb-btn.ping-btn span {
+    display: none;
+  }
 }
 </style>

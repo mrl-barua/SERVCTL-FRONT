@@ -2,13 +2,15 @@
   <section class="keys-page">
     <header class="keys-header">
       <div>
-        <h1>SSH Key Vault</h1>
-        <p>Encrypted SSH keys stored securely for reuse across servers.</p>
+        <h1 class="keys-title">SSH Key Vault</h1>
+        <p class="keys-subtitle">
+          Encrypted SSH keys stored securely for reuse across servers.
+        </p>
       </div>
       <button class="primary-btn" @click="openUpload">+ Add Key</button>
     </header>
 
-    <div class="security-banner">
+    <div class="security-banner security-notice">
       Private keys are encrypted with AES-256-CBC before storage. Fingerprints
       are shown for verification. Keys are never returned via the API and are
       only used server-side for SSH.
@@ -356,6 +358,24 @@ onMounted(fetchKeys);
   cursor: pointer;
 }
 
+.btn-primary {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 9px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-block;
+}
+
+.btn-primary:hover {
+  background: var(--accent2);
+  border-color: var(--accent2);
+}
+
 .primary-btn,
 .btn.primary {
   background: var(--accent);
@@ -470,5 +490,34 @@ onMounted(fetchKeys);
 
 .btn-primary.es-cta {
   margin-top: 4px;
+}
+
+@media (max-width: 767px) {
+  .keys-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .keys-title {
+    font-size: 18px;
+  }
+
+  .keys-subtitle {
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  .security-notice {
+    font-size: 10px;
+    line-height: 1.6;
+    word-break: break-word;
+  }
+
+  .empty-state-card {
+    margin: 16px;
+    padding: 20px 16px;
+    max-width: 100%;
+  }
 }
 </style>

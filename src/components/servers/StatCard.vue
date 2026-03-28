@@ -1,12 +1,12 @@
 <template>
   <div class="stat-card">
     <div class="stat-label">{{ label }}</div>
-    <div :class="['stat-value', colorClass]">{{ numericValue }}</div>
-    <div class="stat-sub">{{ subLabel }}</div>
-    <div v-if="showProgress" class="stat-progress">
+    <div :class="['stat-value', color]">{{ value }}</div>
+    <div v-if="subLabel" class="stat-sub">{{ subLabel }}</div>
+    <div v-if="progress !== null" class="stat-bar">
       <div
-        :class="['stat-progress-fill', progressFillClass]"
-        :style="{ width: progressWidth }"
+        :class="['stat-bar-fill', progressColor || color]"
+        :style="{ width: `${safeProgress}%` }"
       ></div>
     </div>
   </div>
@@ -14,115 +14,41 @@
 
 <script setup>
 import { computed } from "vue";
-import { useServersStore } from "../../stores/servers";
 
-const props = defineProps({
+const { progress } = defineProps({
   label: {
     type: String,
     required: true,
   },
   value: {
-    type: [String, Number],
+    type: Number,
     required: true,
+    default: 0,
   },
   color: {
     type: String,
-    default: null, // null, 'green', 'red', 'yellow'
+    default: "", // 'green' | 'red' | 'yellow' | ''
+  },
+  subLabel: {
+    type: String,
+    default: "",
+  },
+  progress: {
+    type: Number,
+    default: null,
+  },
+  progressColor: {
+    type: String,
+    default: "",
   },
 });
 
-const serversStore = useServersStore();
-
-const numericValue = computed(() => Number(props.value) || 0);
-const total = computed(() => Number(serversStore.totalServers) || 0);
-const online = computed(() => Number(serversStore.onlineServers) || 0);
-const offline = computed(() => Number(serversStore.offlineServers) || 0);
-const unknown = computed(() => Number(serversStore.unknownServers) || 0);
-const environmentCount = computed(() => {
-  const envs = new Set(serversStore.servers.map((server) => server.env));
-  return envs.size;
-});
-
-const lowerLabel = computed(() => props.label.toLowerCase());
-const isTotal = computed(() => lowerLabel.value.includes("total"));
-const isOnline = computed(() => lowerLabel.value.includes("online"));
-const isOffline = computed(() => lowerLabel.value.includes("offline"));
-const isUnknown = computed(() => lowerLabel.value.includes("unknown"));
-
-const colorClass = computed(() => {
-  if (isTotal.value) return "total";
-  if (isOnline.value) return "green";
-  if (isOffline.value) return "red";
-  if (isUnknown.value) return "yellow";
-  return props.color ? props.color : "";
-});
-
-const percentOfFleet = (count) => {
-  if (total.value <= 0) return 0;
-  return Math.round((count / total.value) * 100);
-};
-
-const subLabel = computed(() => {
-  if (isTotal.value) {
-    return `across ${environmentCount.value} environments`;
+const safeProgress = computed(() => {
+  if (progress === null || progress === undefined) {
+    return 0;
   }
 
-  if (isOnline.value) {
-    return `${percentOfFleet(online.value)}% of fleet`;
-  }
-
-  if (isOffline.value) {
-    if (offline.value === 0) {
-      return "all clear";
-    }
-    return `${offline.value} need attention`;
-  }
-
-  if (isUnknown.value) {
-    return unknown.value === 0 ? "all resolved" : "ping to resolve";
-  }
-
-  return "";
-});
-
-const showProgress = computed(
-  () =>
-    !isTotal.value && (isOnline.value || isOffline.value || isUnknown.value),
-);
-
-const progressWidth = computed(() => {
-  if (isOnline.value) {
-    return `${percentOfFleet(online.value)}%`;
-  }
-
-  if (isOffline.value) {
-    if (offline.value === 0) {
-      return "100%";
-    }
-    return `${percentOfFleet(offline.value)}%`;
-  }
-
-  if (isUnknown.value) {
-    return `${percentOfFleet(unknown.value)}%`;
-  }
-
-  return "0%";
-});
-
-const progressFillClass = computed(() => {
-  if (isOnline.value) {
-    return "fill-green";
-  }
-
-  if (isOffline.value) {
-    return offline.value === 0 ? "fill-green" : "fill-red";
-  }
-
-  if (isUnknown.value) {
-    return "fill-yellow";
-  }
-
-  return "";
+  return Math.max(0, Math.min(100, Number(progress) || 0));
 });
 </script>
 
@@ -151,8 +77,9 @@ const progressFillClass = computed(() => {
   line-height: 1;
 }
 
-.stat-value.total {
-  color: var(--text);
+.stat-value::before,
+.stat-value::after {
+  display: none !important;
 }
 
 .stat-value.green {
@@ -174,7 +101,7 @@ const progressFillClass = computed(() => {
   font-family: var(--font-mono);
 }
 
-.stat-progress {
+.stat-bar {
   height: 3px;
   background: var(--bg4);
   border-radius: 2px;
@@ -182,21 +109,25 @@ const progressFillClass = computed(() => {
   overflow: hidden;
 }
 
-.stat-progress-fill {
+.stat-bar-fill {
   height: 100%;
   border-radius: 2px;
   transition: width 0.4s ease;
 }
 
-.stat-progress-fill.fill-green {
+.stat-bar-fill.green {
   background: var(--green);
 }
 
-.stat-progress-fill.fill-red {
+.stat-bar-fill.red {
   background: var(--red);
 }
 
-.stat-progress-fill.fill-yellow {
+.stat-bar-fill.yellow {
   background: var(--yellow);
+}
+
+.stat-bar-fill:not(.green):not(.red):not(.yellow) {
+  background: var(--text);
 }
 </style>
