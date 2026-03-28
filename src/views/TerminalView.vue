@@ -3,18 +3,28 @@
     <div class="ssh-banner">
       <span class="ssh-banner-icon">ℹ</span>
       <div class="ssh-banner-text">
-        <strong>SSH link protocol</strong> — clicking the SSH button opens <code>ssh://</code> URIs. On Ubuntu, register a URI handler with:
+        <strong>SSH link protocol</strong> — clicking the SSH button opens
+        <code>ssh://</code> URIs. On Ubuntu, register a URI handler with:
         <code>xdg-mime default xterm.desktop x-scheme-handler/ssh</code>
-        or use the copy-command button to paste into any terminal.
-        The terminal below runs allowlisted commands through the backend websocket terminal module.
+        or use the copy-command button to paste into any terminal. The terminal
+        below runs allowlisted commands through the backend websocket terminal
+        module.
       </div>
     </div>
 
     <div class="form-row" style="margin-bottom: 14px">
       <label class="form-label">active server</label>
-      <select v-model.number="selectedServerId" class="form-select" style="max-width: 280px">
+      <select
+        v-model.number="selectedServerId"
+        class="form-select"
+        style="max-width: 280px"
+      >
         <option value="">select a server</option>
-        <option v-for="server in serversStore.servers" :key="server.id" :value="server.id">
+        <option
+          v-for="server in serversStore.servers"
+          :key="server.id"
+          :value="server.id"
+        >
           {{ server.name }} ({{ server.host }})
         </option>
       </select>
@@ -26,38 +36,38 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { useServersStore } from '../stores/servers'
-import TerminalPanel from '../components/terminal/TerminalPanel.vue'
-import QuickCommands from '../components/terminal/QuickCommands.vue'
+import { ref, watch } from "vue";
+import { useRoute } from "vue-router";
+import { useServersStore } from "../stores/servers";
+import TerminalPanel from "../components/terminal/TerminalPanel.vue";
+import QuickCommands from "../components/terminal/QuickCommands.vue";
 
-const route = useRoute()
-const serversStore = useServersStore()
-const selectedServerId = ref(0)
+const route = useRoute();
+const serversStore = useServersStore();
+const selectedServerId = ref(0);
 
 // Set selected server from query param or default to first server
 watch(
   () => route.query.serverId,
   (newServerId) => {
     if (newServerId) {
-      selectedServerId.value = parseInt(newServerId)
+      selectedServerId.value = parseInt(newServerId);
     } else if (serversStore.servers.length > 0) {
-      selectedServerId.value = serversStore.servers[0].id
+      selectedServerId.value = serversStore.servers[0].id;
     }
   },
   { immediate: true },
-)
+);
 
 watch(
   () => serversStore.servers,
   (servers) => {
     if (!selectedServerId.value && servers.length > 0) {
-      selectedServerId.value = servers[0].id
+      selectedServerId.value = servers[0].id;
     }
   },
   { deep: true, immediate: true },
-)
+);
 </script>
 
 <style scoped>

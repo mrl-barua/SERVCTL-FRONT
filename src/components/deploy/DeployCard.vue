@@ -3,29 +3,64 @@
     <div class="deploy-header">
       <div>
         <div class="deploy-name">{{ server.name }}</div>
-        <div style="font-size: 10px; color: var(--text3); margin-top: 2px; font-family: var(--font-mono)">{{ server.deploy }}</div>
+        <div
+          style="
+            font-size: 10px;
+            color: var(--text3);
+            margin-top: 2px;
+            font-family: var(--font-mono);
+          "
+        >
+          {{ server.deploy }}
+        </div>
       </div>
-      <span :class="['deploy-status-badge', `dsb-${deployState.status}`]">{{ deployState.status }}</span>
+      <span :class="['deploy-status-badge', `dsb-${deployState.status}`]">{{
+        deployState.status
+      }}</span>
     </div>
 
     <div class="progress-bar">
-      <div :class="['progress-fill', deployState.status === 'running' ? 'running' : '']" :style="{ width: deployState.progress + '%' }"></div>
+      <div
+        :class="[
+          'progress-fill',
+          deployState.status === 'running' ? 'running' : '',
+        ]"
+        :style="{ width: deployState.progress + '%' }"
+      ></div>
     </div>
 
     <div class="deploy-commands">
-      <div v-for="(step, index) in deployStore.DEPLOY_STEPS" :key="index" class="cmd-item">
+      <div
+        v-for="(step, index) in deployStore.DEPLOY_STEPS"
+        :key="index"
+        class="cmd-item"
+      >
         <div
           :class="[
             'cmd-check',
-            index < deployState.step ? 'done' : index === deployState.step ? 'running' : '',
+            index < deployState.step
+              ? 'done'
+              : index === deployState.step
+                ? 'running'
+                : '',
           ]"
         >
-          {{ index < deployState.step ? '✓' : index === deployState.step ? '…' : '' }}
+          {{
+            index < deployState.step
+              ? "✓"
+              : index === deployState.step
+                ? "…"
+                : ""
+          }}
         </div>
         <div
           :class="[
             'cmd-text',
-            index < deployState.step ? 'done' : index === deployState.step ? 'running' : '',
+            index < deployState.step
+              ? 'done'
+              : index === deployState.step
+                ? 'running'
+                : '',
           ]"
         >
           {{ step }}
@@ -41,7 +76,11 @@
       >
         ▶ run deploy
       </button>
-      <button v-show="deployState.status === 'running'" class="deploy-btn stop" @click="handleStopDeploy">
+      <button
+        v-show="deployState.status === 'running'"
+        class="deploy-btn stop"
+        @click="handleStopDeploy"
+      >
         ■ stop
       </button>
     </div>
@@ -49,48 +88,54 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
-import { useDeployStore } from '../../stores/deploy'
-import { useToastStore } from '../../stores/toast'
+import { computed, onMounted } from "vue";
+import { useDeployStore } from "../../stores/deploy";
+import { useToastStore } from "../../stores/toast";
 
 const props = defineProps({
   server: {
     type: Object,
     required: true,
   },
-})
+});
 
-const deployStore = useDeployStore()
-const toastStore = useToastStore()
+const deployStore = useDeployStore();
+const toastStore = useToastStore();
 
 const deployState = computed(() => {
-  return deployStore.getDeployState(props.server.id)
-})
+  return deployStore.getDeployState(props.server.id);
+});
 
 async function handleStartDeploy() {
   try {
-    await deployStore.startDeploy(props.server.id)
-    toastStore.showToast(`Deploy started for ${props.server.name}`, 'success')
+    await deployStore.startDeploy(props.server.id);
+    toastStore.showToast(`Deploy started for ${props.server.name}`, "success");
   } catch (error) {
-    const message = error?.response?.data?.message || 'Failed to start deploy'
-    toastStore.showToast(Array.isArray(message) ? message.join(', ') : message, 'error')
+    const message = error?.response?.data?.message || "Failed to start deploy";
+    toastStore.showToast(
+      Array.isArray(message) ? message.join(", ") : message,
+      "error",
+    );
   }
 }
 
 async function handleStopDeploy() {
   try {
-    await deployStore.stopDeploy(props.server.id)
-    toastStore.showToast(`Deploy stopped for ${props.server.name}`, 'warning')
+    await deployStore.stopDeploy(props.server.id);
+    toastStore.showToast(`Deploy stopped for ${props.server.name}`, "warning");
   } catch (error) {
-    const message = error?.response?.data?.message || 'Failed to stop deploy'
-    toastStore.showToast(Array.isArray(message) ? message.join(', ') : message, 'error')
+    const message = error?.response?.data?.message || "Failed to stop deploy";
+    toastStore.showToast(
+      Array.isArray(message) ? message.join(", ") : message,
+      "error",
+    );
   }
 }
 
 onMounted(async () => {
-  deployStore.subscribe(props.server.id)
-  await deployStore.refreshStatus(props.server.id)
-})
+  deployStore.subscribe(props.server.id);
+  await deployStore.refreshStatus(props.server.id);
+});
 </script>
 
 <style scoped>
@@ -252,13 +297,19 @@ onMounted(async () => {
 }
 
 .progress-fill.running {
-  background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 50%, var(--accent) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--accent) 0%,
+    var(--accent2) 50%,
+    var(--accent) 100%
+  );
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
 
 @keyframes pulse-border {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

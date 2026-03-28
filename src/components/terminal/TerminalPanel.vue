@@ -7,11 +7,21 @@
         <div class="term-dot td-green"></div>
       </div>
       <div class="term-title">{{ terminalTitle }}</div>
-      <button class="card-btn" @click="handleClear" style="margin-left: auto; font-size: 10px">clear</button>
+      <button
+        class="card-btn"
+        @click="handleClear"
+        style="margin-left: auto; font-size: 10px"
+      >
+        clear
+      </button>
     </div>
 
     <div class="term-body" ref="termBodyRef">
-      <div v-for="(line, index) in termStore.lines" :key="index" class="term-line">
+      <div
+        v-for="(line, index) in termStore.lines"
+        :key="index"
+        class="term-line"
+      >
         <template v-if="line.type === 'prompt'">
           <span class="prompt">{{ line.content }}</span>
         </template>
@@ -47,99 +57,99 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
-import { useTerminalStore } from '../../stores/terminal'
-import { useServersStore } from '../../stores/servers'
+import { ref, computed, watch, nextTick, onBeforeUnmount } from "vue";
+import { useTerminalStore } from "../../stores/terminal";
+import { useServersStore } from "../../stores/servers";
 
 const props = defineProps({
   serverId: {
     type: Number,
     default: null,
   },
-})
+});
 
-const termStore = useTerminalStore()
-const serversStore = useServersStore()
-const inputRef = ref(null)
-const termBodyRef = ref(null)
-const inputValue = ref('')
+const termStore = useTerminalStore();
+const serversStore = useServersStore();
+const inputRef = ref(null);
+const termBodyRef = ref(null);
+const inputValue = ref("");
 
 const currentServer = computed(() => {
   if (props.serverId) {
-    return serversStore.getServerById(props.serverId)
+    return serversStore.getServerById(props.serverId);
   }
-  return null
-})
+  return null;
+});
 
 const terminalTitle = computed(() => {
   if (currentServer.value) {
-    return `${currentServer.value.user}@${currentServer.value.name} — ${currentServer.value.host}:${currentServer.value.port}`
+    return `${currentServer.value.user}@${currentServer.value.name} — ${currentServer.value.host}:${currentServer.value.port}`;
   }
-  return 'select a server'
-})
+  return "select a server";
+});
 
 const promptLabel = computed(() => {
   if (currentServer.value) {
-    return `${currentServer.value.user}@${currentServer.value.name}:~$`
+    return `${currentServer.value.user}@${currentServer.value.name}:~$`;
   }
-  return '$'
-})
+  return "$";
+});
 
 watch(
   () => termStore.lines.length,
   () => {
     nextTick(() => {
       if (termBodyRef.value) {
-        termBodyRef.value.scrollTop = termBodyRef.value.scrollHeight
+        termBodyRef.value.scrollTop = termBodyRef.value.scrollHeight;
       }
-    })
+    });
   },
-)
+);
 
 watch(
   () => currentServer.value?.id,
   (serverId) => {
     if (!serverId) {
-      return
+      return;
     }
 
-    termStore.connect(serverId)
+    termStore.connect(serverId);
   },
   { immediate: true },
-)
+);
 
 function handleRun() {
-  if (!inputValue.value.trim()) return
-  if (!currentServer.value) return
+  if (!inputValue.value.trim()) return;
+  if (!currentServer.value) return;
 
   termStore.executeCommand(
     inputValue.value.trim(),
     currentServer.value.user,
     currentServer.value.name,
-  )
+  );
 
-  inputValue.value = ''
+  inputValue.value = "";
 }
 
 function handleKeyDown(e) {
-  if (e.key === 'Enter') {
-    handleRun()
-  } else if (e.key === 'ArrowUp') {
-    inputValue.value = termStore.getPrevHistory()
-    e.preventDefault()
-  } else if (e.key === 'ArrowDown') {
-    inputValue.value = termStore.getNextHistory()
-    e.preventDefault()
+  if (e.key === "Enter") {
+    handleRun();
+  } else if (e.key === "ArrowUp") {
+    inputValue.value = termStore.getPrevHistory();
+    e.preventDefault();
+  } else if (e.key === "ArrowDown") {
+    inputValue.value = termStore.getNextHistory();
+    e.preventDefault();
   }
 }
 
 function handleClear() {
-  termStore.clear()
+  termStore.clear();
 }
 
 onBeforeUnmount(() => {
-  termStore.disconnect()
-})
+  termStore.disconnect();
+});
 </script>
 
 <style scoped>
@@ -288,10 +298,13 @@ onBeforeUnmount(() => {
 }
 
 @keyframes cursor-blink {
-  0%, 49%, 100% {
+  0%,
+  49%,
+  100% {
     opacity: 1;
   }
-  50%, 99% {
+  50%,
+  99% {
     opacity: 0.3;
   }
 }

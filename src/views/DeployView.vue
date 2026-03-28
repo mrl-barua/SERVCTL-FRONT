@@ -5,37 +5,41 @@
     </div>
 
     <div v-else class="deploy-grid">
-      <DeployCard v-for="server in deployableServers" :key="server.id" :server="server" />
+      <DeployCard
+        v-for="server in deployableServers"
+        :key="server.id"
+        :server="server"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, watch } from 'vue'
-import { useServersStore } from '../stores/servers'
-import { useDeployStore } from '../stores/deploy'
-import DeployCard from '../components/deploy/DeployCard.vue'
+import { computed, onBeforeUnmount, watch } from "vue";
+import { useServersStore } from "../stores/servers";
+import { useDeployStore } from "../stores/deploy";
+import DeployCard from "../components/deploy/DeployCard.vue";
 
-const serversStore = useServersStore()
-const deployStore = useDeployStore()
+const serversStore = useServersStore();
+const deployStore = useDeployStore();
 
 const deployableServers = computed(() => {
-  return serversStore.servers.filter(s => s.deploy)
-})
+  return serversStore.servers.filter((s) => s.deploy);
+});
 
 watch(
   () => deployableServers.value,
   async (servers) => {
     for (const server of servers) {
-      await deployStore.refreshStatus(server.id)
+      await deployStore.refreshStatus(server.id);
     }
   },
   { immediate: true },
-)
+);
 
 onBeforeUnmount(() => {
-  deployStore.disconnectSocket()
-})
+  deployStore.disconnectSocket();
+});
 </script>
 
 <style scoped>
