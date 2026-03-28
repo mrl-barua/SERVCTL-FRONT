@@ -15,7 +15,39 @@
     </div>
 
     <div v-if="loading" class="muted">Loading keys...</div>
-    <div v-else-if="keys.length === 0" class="muted">No keys in vault yet.</div>
+    <div v-else-if="keys.length === 0" class="empty-state-card">
+      <div class="es-icon">🔑</div>
+      <div class="es-title">No SSH keys in vault yet</div>
+      <div class="es-body">
+        SSH keys let you connect to servers without passwords. Add a key once
+        and reuse it across multiple servers.
+      </div>
+
+      <div class="es-steps">
+        <div class="es-step">
+          <span class="step-num">1</span>
+          <span class="step-text">
+            Generate a key pair on your machine:
+            <code>ssh-keygen -t ed25519 -C "servctl"</code>
+          </span>
+        </div>
+        <div class="es-step">
+          <span class="step-num">2</span>
+          <span class="step-text">
+            Copy the public key to your server:
+            <code>ssh-copy-id user@your-server</code>
+          </span>
+        </div>
+        <div class="es-step">
+          <span class="step-num">3</span>
+          <span class="step-text">
+            Upload the private key here to use in SERVCTL
+          </span>
+        </div>
+      </div>
+
+      <button class="btn-primary es-cta" @click="openUpload">+ Add Your First Key</button>
+    </div>
 
     <div v-else class="keys-grid">
       <article v-for="key in keys" :key="key.id" class="key-card">
@@ -362,5 +394,79 @@ onMounted(fetchKeys);
   border-radius: var(--radius);
   padding: 8px;
   font-family: var(--font-mono);
+}
+
+.empty-state-card {
+  max-width: 520px;
+  margin: 40px auto;
+  text-align: center;
+  padding: 32px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.es-icon {
+  font-size: 36px;
+  margin-bottom: 14px;
+}
+
+.es-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.es-body {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.es-steps {
+  text-align: left;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.es-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--text2);
+}
+
+.step-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  color: var(--accent);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.step-text code {
+  background: var(--bg4);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 10px;
+  color: var(--green);
+  display: block;
+  margin-top: 4px;
+}
+
+.btn-primary.es-cta {
+  margin-top: 4px;
 }
 </style>

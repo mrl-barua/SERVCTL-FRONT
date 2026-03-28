@@ -1,7 +1,24 @@
 <template>
   <div>
-    <div v-if="deployableServers.length === 0" class="empty-state">
-      No servers with deploy scripts. Add one when creating a server.
+    <div v-if="deployableServers.length === 0" class="empty-state-card">
+      <div class="es-icon">↑</div>
+      <div class="es-title">No deploy scripts configured</div>
+      <div class="es-body">
+        Add a deploy command to a server to enable one-click deployments with
+        real-time step tracking.
+      </div>
+
+      <div class="es-hint">
+        When adding or editing a server, fill in the
+        <strong>Deploy script</strong> field:
+        <code>./deploy.sh production</code>
+        <code>make deploy</code>
+        <code>npm run deploy</code>
+      </div>
+
+      <button class="btn-secondary es-cta" @click="$router.push('/')">
+        ← Go to Overview
+      </button>
     </div>
 
     <div v-else class="deploy-grid">
@@ -49,10 +66,59 @@ onBeforeUnmount(() => {
   gap: 14px;
 }
 
-.empty-state {
+.empty-state-card {
+  max-width: 520px;
+  margin: 40px auto;
   text-align: center;
-  padding: 40px;
-  color: var(--text3);
+  padding: 32px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.es-icon {
+  font-size: 36px;
+  margin-bottom: 14px;
+}
+
+.es-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.es-body {
   font-size: 12px;
+  color: var(--text2);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.es-hint {
+  font-size: 11px;
+  color: var(--text2);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  text-align: left;
+  margin-bottom: 20px;
+  line-height: 1.8;
+}
+
+.es-hint strong {
+  color: var(--text);
+}
+
+.es-hint code {
+  display: block;
+  color: var(--green);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.es-cta {
+  margin-top: 4px;
 }
 </style>

@@ -39,14 +39,15 @@
       ></div>
     </div>
 
-    <div class="card-actions" style="margin-top: 12px">
+    <div class="card-actions">
       <router-link
         :to="{ name: 'terminal', query: { serverId: server.id } }"
         class="card-btn ssh"
+        :title="`Open SSH for ${server.user}@${server.host}:${server.port}`"
       >
         ⌨ SSH
       </router-link>
-      <button class="card-btn" @click="handleCopySSH">copy cmd</button>
+      <button class="card-btn logs" @click="handleLogs">≡ logs</button>
       <button
         v-if="server.deploy"
         class="card-btn deploy"
@@ -54,9 +55,23 @@
       >
         ↑ deploy
       </button>
-      <button class="card-btn logs" @click="handleLogs">≡ logs</button>
-      <button class="card-btn edit" @click="openEditModal">✎ edit</button>
-      <button class="card-btn danger" @click="handleDelete">✕ delete</button>
+
+      <div class="card-actions-secondary">
+        <button
+          class="icon-btn icon-edit"
+          title="Edit server"
+          @click="openEditModal"
+        >
+          ✎
+        </button>
+        <button
+          class="icon-btn icon-delete"
+          title="Delete server"
+          @click="handleDelete"
+        >
+          ✕
+        </button>
+      </div>
     </div>
 
     <AddServerModal
@@ -72,7 +87,6 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { useSSH } from "../../composables/useSSH";
 import { useServersStore } from "../../stores/servers";
 import { useToastStore } from "../../stores/toast";
 import AddServerModal from "./AddServerModal.vue";
@@ -85,7 +99,6 @@ const props = defineProps({
 });
 
 const router = useRouter();
-const { copySSHCommand } = useSSH();
 const serversStore = useServersStore();
 const toastStore = useToastStore();
 const showEditModal = ref(false);
@@ -103,15 +116,6 @@ const envIcons = {
   qa: "🔬",
   test: "🧪",
 };
-
-async function handleCopySSH() {
-  const success = await copySSHCommand(props.server);
-  if (success) {
-    toastStore.showToast("SSH command copied to clipboard!", "success");
-  } else {
-    toastStore.showToast("Failed to copy SSH command", "error");
-  }
-}
 
 function handleDeploy() {
   router.push({ name: "deploy", query: { serverId: props.server.id } });
@@ -342,8 +346,15 @@ async function handleDelete() {
 
 .card-actions {
   display: flex;
+  align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.card-actions-secondary {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
 }
 
 .card-btn {
@@ -395,21 +406,30 @@ async function handleDelete() {
   background: var(--yellow-bg);
 }
 
-.card-btn.edit {
-  border-color: var(--accent2);
-  color: var(--accent);
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg4);
+  color: var(--text3);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
 }
 
-.card-btn.edit:hover {
-  background: #0d1a2b;
+.icon-edit:hover {
+  border-color: var(--yellow);
+  color: var(--yellow);
+  background: var(--yellow-bg);
 }
 
-.card-btn.danger {
-  border-color: #5d1f1f;
+.icon-delete:hover {
+  border-color: var(--red);
   color: var(--red);
-}
-
-.card-btn.danger:hover {
   background: var(--red-bg);
 }
 

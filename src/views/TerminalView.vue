@@ -1,14 +1,25 @@
 <template>
   <div>
-    <div class="ssh-banner">
-      <span class="ssh-banner-icon">ℹ</span>
-      <div class="ssh-banner-text">
-        <strong>SSH link protocol</strong> — clicking the SSH button opens
-        <code>ssh://</code> URIs. On Ubuntu, register a URI handler with:
-        <code>xdg-mime default xterm.desktop x-scheme-handler/ssh</code>
-        or use the copy-command button to paste into any terminal. The terminal
-        below runs allowlisted commands through the backend websocket terminal
-        module.
+    <div v-if="!bannerDismissed" class="ssh-banner" :class="{ expanded: bannerExpanded }">
+      <div class="ssh-banner-main" @click="bannerExpanded = !bannerExpanded">
+        <span class="ssh-banner-icon">ℹ</span>
+        <div class="ssh-banner-text">
+          <strong>SSH link protocol</strong>
+          <span v-if="!bannerExpanded"> - click to expand</span>
+          <template v-else>
+            - clicking the SSH button opens <code>ssh://</code> URIs. Register a
+            handler with:
+            <code>xdg-mime default xterm.desktop x-scheme-handler/ssh</code>
+            The terminal runs allowlisted commands via backend WebSocket.
+          </template>
+        </div>
+      </div>
+
+      <div class="ssh-banner-actions">
+        <button class="ssh-banner-toggle" @click.stop="bannerExpanded = !bannerExpanded">
+          {{ bannerExpanded ? "-" : "+" }}
+        </button>
+        <button class="ssh-banner-dismiss" @click.stop="dismissBanner">×</button>
       </div>
     </div>
 
@@ -80,6 +91,10 @@ const serversStore = useServersStore();
 const qcStore = useQuickCommandsStore();
 const selectedServerId = ref(0);
 const managerOpen = ref(false);
+const bannerExpanded = ref(false);
+const bannerDismissed = ref(
+  localStorage.getItem("servctl_banner_dismissed") === "true",
+);
 
 const quickCommands = computed(() =>
   qcStore.forServer(selectedServerId.value || null),
@@ -129,31 +144,54 @@ function injectCmd(cmd) {
     input.focus();
   }
 }
+
+function dismissBanner() {
+  bannerDismissed.value = true;
+  localStorage.setItem("servctl_banner_dismissed", "true");
+}
 </script>
 
 <style scoped>
 .ssh-banner {
   background: #0d1a2b;
   border: 1px solid var(--accent2);
-  border-radius: var(--radius-lg);
-  padding: 12px 16px;
+  border-radius: var(--radius);
+  padding: 6px 10px;
   display: flex;
-  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  min-height: 32px;
+}
+
+.ssh-banner.expanded {
   align-items: flex-start;
-  margin-bottom: 20px;
+  padding: 10px 12px;
 }
 
 .ssh-banner-icon {
   color: var(--accent);
-  font-size: 16px;
+  font-size: 14px;
   flex-shrink: 0;
-  margin-top: 1px;
+}
+
+.ssh-banner-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  cursor: pointer;
+}
+
+.ssh-banner.expanded .ssh-banner-main {
+  align-items: flex-start;
 }
 
 .ssh-banner-text {
   font-size: 11px;
   color: var(--text2);
-  line-height: 1.7;
+  line-height: 1.5;
 }
 
 .ssh-banner-text strong {
@@ -167,6 +205,33 @@ function injectCmd(cmd) {
   padding: 1px 6px;
   font-size: 10px;
   color: var(--green);
+}
+
+.ssh-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ssh-banner-toggle,
+.ssh-banner-dismiss {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg4);
+  color: var(--text3);
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.ssh-banner-toggle:hover,
+.ssh-banner-dismiss:hover {
+  color: var(--text);
+  border-color: var(--border2);
 }
 
 .form-row {
