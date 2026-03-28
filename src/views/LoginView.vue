@@ -49,7 +49,11 @@
         <input v-model="forgotEmail" type="email" class="auth-input" required />
         <p class="inline-error">{{ forgotError }}</p>
 
-        <button class="auth-btn" :disabled="forgotLoading" @click="submitForgotPassword">
+        <button
+          class="auth-btn"
+          :disabled="forgotLoading"
+          @click="submitForgotPassword"
+        >
           {{ forgotLoading ? "Sending..." : "Send Reset Link" }}
         </button>
 
@@ -192,7 +196,8 @@ async function submitForgotPassword() {
 
     panel.value = "check-email";
   } catch (error) {
-    const message = error?.response?.data?.message || "Unable to send reset link.";
+    const message =
+      error?.response?.data?.message || "Unable to send reset link.";
     forgotError.value = Array.isArray(message) ? message.join(", ") : message;
   } finally {
     forgotLoading.value = false;
@@ -218,7 +223,8 @@ async function resendResetEmail() {
     }, 3000);
     startResendCooldown();
   } catch (error) {
-    const message = error?.response?.data?.message || "Unable to resend reset email.";
+    const message =
+      error?.response?.data?.message || "Unable to resend reset email.";
     toastStore.showToast(
       Array.isArray(message) ? message.join(", ") : message,
       "error",

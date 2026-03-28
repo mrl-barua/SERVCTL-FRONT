@@ -2,10 +2,14 @@
   <div class="auth-shell">
     <div class="auth-card" v-if="!success">
       <h1 class="auth-title">Set a new password</h1>
-      <p class="auth-subtitle">Choose a strong password for your SERVCTL account.</p>
+      <p class="auth-subtitle">
+        Choose a strong password for your SERVCTL account.
+      </p>
 
       <template v-if="tokenMissing">
-        <p class="auth-error">Reset token is missing. Redirecting to login...</p>
+        <p class="auth-error">
+          Reset token is missing. Redirecting to login...
+        </p>
       </template>
 
       <template v-else>
@@ -17,8 +21,12 @@
             class="auth-input"
             autocomplete="new-password"
           />
-          <button class="toggle-btn" type="button" @click="showPassword = !showPassword">
-            {{ showPassword ? 'Hide' : 'Show' }}
+          <button
+            class="toggle-btn"
+            type="button"
+            @click="showPassword = !showPassword"
+          >
+            {{ showPassword ? "Hide" : "Show" }}
           </button>
         </div>
 
@@ -30,21 +38,31 @@
             class="auth-input"
             autocomplete="new-password"
           />
-          <button class="toggle-btn" type="button" @click="showConfirmPassword = !showConfirmPassword">
-            {{ showConfirmPassword ? 'Hide' : 'Show' }}
+          <button
+            class="toggle-btn"
+            type="button"
+            @click="showConfirmPassword = !showConfirmPassword"
+          >
+            {{ showConfirmPassword ? "Hide" : "Show" }}
           </button>
         </div>
 
         <div class="strength-wrap">
           <div class="strength-label">Password strength</div>
           <div class="strength-bar">
-            <span class="strength-fill" :class="strengthClass" :style="{ width: strengthWidth }"></span>
+            <span
+              class="strength-fill"
+              :class="strengthClass"
+              :style="{ width: strengthWidth }"
+            ></span>
           </div>
-          <div class="strength-text" :class="strengthClass">{{ strengthText }}</div>
+          <div class="strength-text" :class="strengthClass">
+            {{ strengthText }}
+          </div>
         </div>
 
         <button class="auth-btn" :disabled="loading" @click="submitReset">
-          {{ loading ? 'Updating...' : 'Update Password' }}
+          {{ loading ? "Updating..." : "Update Password" }}
         </button>
 
         <p class="auth-error" v-if="errorText">{{ errorText }}</p>
@@ -65,92 +83,96 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import apiClient from '../services/http'
+import { computed, onMounted, reactive, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import apiClient from "../services/http";
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-const token = ref('')
-const tokenMissing = ref(false)
-const loading = ref(false)
-const expired = ref(false)
-const success = ref(false)
-const errorText = ref('')
-const showPassword = ref(false)
-const showConfirmPassword = ref(false)
+const token = ref("");
+const tokenMissing = ref(false);
+const loading = ref(false);
+const expired = ref(false);
+const success = ref(false);
+const errorText = ref("");
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 
 const form = reactive({
-  password: '',
-  confirmPassword: '',
-})
+  password: "",
+  confirmPassword: "",
+});
 
 const strengthScore = computed(() => {
-  const value = form.password || ''
-  let score = 0
-  if (value.length >= 8) score += 1
-  if (/[A-Z]/.test(value)) score += 1
-  if (/[0-9]/.test(value)) score += 1
-  if (/[^A-Za-z0-9]/.test(value)) score += 1
-  return score
-})
+  const value = form.password || "";
+  let score = 0;
+  if (value.length >= 8) score += 1;
+  if (/[A-Z]/.test(value)) score += 1;
+  if (/[0-9]/.test(value)) score += 1;
+  if (/[^A-Za-z0-9]/.test(value)) score += 1;
+  return score;
+});
 
-const strengthWidth = computed(() => `${(strengthScore.value / 4) * 100}%`)
+const strengthWidth = computed(() => `${(strengthScore.value / 4) * 100}%`);
 
 const strengthClass = computed(() => {
-  if (strengthScore.value <= 2) return 'weak'
-  if (strengthScore.value === 3) return 'fair'
-  return 'strong'
-})
+  if (strengthScore.value <= 2) return "weak";
+  if (strengthScore.value === 3) return "fair";
+  return "strong";
+});
 
 const strengthText = computed(() => {
-  if (strengthScore.value <= 2) return 'Weak'
-  if (strengthScore.value === 3) return 'Fair'
-  return 'Strong'
-})
+  if (strengthScore.value <= 2) return "Weak";
+  if (strengthScore.value === 3) return "Fair";
+  return "Strong";
+});
 
 onMounted(() => {
-  const rawToken = route.query.token
-  token.value = typeof rawToken === 'string' ? rawToken : ''
+  const rawToken = route.query.token;
+  token.value = typeof rawToken === "string" ? rawToken : "";
 
   if (!token.value) {
-    tokenMissing.value = true
+    tokenMissing.value = true;
     setTimeout(() => {
-      router.replace({ name: 'login' })
-    }, 600)
+      router.replace({ name: "login" });
+    }, 600);
   }
-})
+});
 
 async function submitReset() {
-  expired.value = false
-  errorText.value = ''
+  expired.value = false;
+  errorText.value = "";
 
   if (!form.password || !form.confirmPassword) {
-    errorText.value = 'Please fill in both password fields.'
-    return
+    errorText.value = "Please fill in both password fields.";
+    return;
   }
 
-  loading.value = true
+  loading.value = true;
 
   try {
-    await apiClient.post('/auth/reset-password', {
+    await apiClient.post("/auth/reset-password", {
       token: token.value,
       password: form.password,
       confirmPassword: form.confirmPassword,
-    })
+    });
 
-    success.value = true
+    success.value = true;
   } catch (error) {
-    const message = error?.response?.data?.message || 'Unable to reset password.'
-    const formatted = Array.isArray(message) ? message.join(', ') : message
-    errorText.value = formatted
+    const message =
+      error?.response?.data?.message || "Unable to reset password.";
+    const formatted = Array.isArray(message) ? message.join(", ") : message;
+    errorText.value = formatted;
 
-    if (String(formatted).toLowerCase().includes('expired') || String(formatted).toLowerCase().includes('invalid')) {
-      expired.value = true
+    if (
+      String(formatted).toLowerCase().includes("expired") ||
+      String(formatted).toLowerCase().includes("invalid")
+    ) {
+      expired.value = true;
     }
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 </script>
@@ -252,7 +274,9 @@ async function submitReset() {
 .strength-fill {
   display: block;
   height: 100%;
-  transition: width 0.3s ease, background-color 0.3s ease;
+  transition:
+    width 0.3s ease,
+    background-color 0.3s ease;
 }
 
 .strength-text {
