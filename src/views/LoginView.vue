@@ -8,10 +8,15 @@
       <input v-model="form.email" type="email" class="auth-input" required />
 
       <label class="auth-label">Password</label>
-      <input v-model="form.password" type="password" class="auth-input" required />
+      <input
+        v-model="form.password"
+        type="password"
+        class="auth-input"
+        required
+      />
 
       <button class="auth-btn" :disabled="authStore.loading">
-        {{ authStore.loading ? 'Signing in...' : 'Sign In' }}
+        {{ authStore.loading ? "Signing in..." : "Sign In" }}
       </button>
 
       <p class="auth-footer">
@@ -23,31 +28,34 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import { useToastStore } from '../stores/toast'
+import { reactive } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
+import { useToastStore } from "../stores/toast";
 
-const router = useRouter()
-const authStore = useAuthStore()
-const toastStore = useToastStore()
+const router = useRouter();
+const authStore = useAuthStore();
+const toastStore = useToastStore();
 
 const form = reactive({
-  email: '',
-  password: '',
-})
+  email: "",
+  password: "",
+});
 
 async function handleSubmit() {
   try {
     await authStore.login({
       email: form.email,
       password: form.password,
-    })
-    toastStore.showToast('Welcome back!', 'success')
-    router.push({ name: 'overview' })
+    });
+    toastStore.showToast("Welcome back!", "success");
+    router.push({ name: "overview" });
   } catch (error) {
-    const message = error?.response?.data?.message || 'Login failed'
-    toastStore.showToast(Array.isArray(message) ? message.join(', ') : message, 'error')
+    const message = error?.response?.data?.message || "Login failed";
+    toastStore.showToast(
+      Array.isArray(message) ? message.join(", ") : message,
+      "error",
+    );
   }
 }
 </script>

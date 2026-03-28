@@ -15,15 +15,15 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { RouterView, useRoute } from 'vue-router'
-import AppSidebar from './components/layout/AppSidebar.vue'
-import AppTopbar from './components/layout/AppTopbar.vue'
-import AppToast from './components/AppToast.vue'
+import { computed } from "vue";
+import { RouterView, useRoute } from "vue-router";
+import AppSidebar from "./components/layout/AppSidebar.vue";
+import AppTopbar from "./components/layout/AppTopbar.vue";
+import AppToast from "./components/AppToast.vue";
 
-const route = useRoute()
+const route = useRoute();
 
-const showDashboardLayout = computed(() => Boolean(route.meta.requiresAuth))
+const showDashboardLayout = computed(() => Boolean(route.meta.requiresAuth));
 </script>
 
 <style scoped>

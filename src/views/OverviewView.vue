@@ -2,9 +2,21 @@
   <div>
     <div class="stats-row">
       <StatCard label="total servers" :value="serversStore.totalServers" />
-      <StatCard label="online" :value="serversStore.onlineServers" color="green" />
-      <StatCard label="offline" :value="serversStore.offlineServers" color="red" />
-      <StatCard label="unknown" :value="serversStore.unknownServers" color="yellow" />
+      <StatCard
+        label="online"
+        :value="serversStore.onlineServers"
+        color="green"
+      />
+      <StatCard
+        label="offline"
+        :value="serversStore.offlineServers"
+        color="red"
+      />
+      <StatCard
+        label="unknown"
+        :value="serversStore.unknownServers"
+        color="yellow"
+      />
     </div>
 
     <ServerGrid />
@@ -12,18 +24,18 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
-import { useServersStore } from '../stores/servers'
-import StatCard from '../components/servers/StatCard.vue'
-import ServerGrid from '../components/servers/ServerGrid.vue'
+import { onMounted } from "vue";
+import { useServersStore } from "../stores/servers";
+import StatCard from "../components/servers/StatCard.vue";
+import ServerGrid from "../components/servers/ServerGrid.vue";
 
-const serversStore = useServersStore()
+const serversStore = useServersStore();
 
 onMounted(async () => {
   if (serversStore.servers.length === 0) {
-    await serversStore.fetchServers()
+    await serversStore.fetchServers();
   }
-})
+});
 </script>
 
 <style scoped>

@@ -49,8 +49,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useDeployStore } from '../../stores/deploy'
+import { useToastStore } from '../../stores/toast'
 
 const props = defineProps({
   server: {
@@ -60,18 +61,36 @@ const props = defineProps({
 })
 
 const deployStore = useDeployStore()
+const toastStore = useToastStore()
 
 const deployState = computed(() => {
   return deployStore.getDeployState(props.server.id)
 })
 
-function handleStartDeploy() {
-  deployStore.startDeploy(props.server.id)
+async function handleStartDeploy() {
+  try {
+    await deployStore.startDeploy(props.server.id)
+    toastStore.showToast(`Deploy started for ${props.server.name}`, 'success')
+  } catch (error) {
+    const message = error?.response?.data?.message || 'Failed to start deploy'
+    toastStore.showToast(Array.isArray(message) ? message.join(', ') : message, 'error')
+  }
 }
 
-function handleStopDeploy() {
-  deployStore.stopDeploy(props.server.id)
+async function handleStopDeploy() {
+  try {
+    await deployStore.stopDeploy(props.server.id)
+    toastStore.showToast(`Deploy stopped for ${props.server.name}`, 'warning')
+  } catch (error) {
+    const message = error?.response?.data?.message || 'Failed to stop deploy'
+    toastStore.showToast(Array.isArray(message) ? message.join(', ') : message, 'error')
+  }
 }
+
+onMounted(async () => {
+  deployStore.subscribe(props.server.id)
+  await deployStore.refreshStatus(props.server.id)
+})
 </script>
 
 <style scoped>

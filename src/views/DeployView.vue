@@ -11,14 +11,30 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, watch } from 'vue'
 import { useServersStore } from '../stores/servers'
+import { useDeployStore } from '../stores/deploy'
 import DeployCard from '../components/deploy/DeployCard.vue'
 
 const serversStore = useServersStore()
+const deployStore = useDeployStore()
 
 const deployableServers = computed(() => {
   return serversStore.servers.filter(s => s.deploy)
+})
+
+watch(
+  () => deployableServers.value,
+  async (servers) => {
+    for (const server of servers) {
+      await deployStore.refreshStatus(server.id)
+    }
+  },
+  { immediate: true },
+)
+
+onBeforeUnmount(() => {
+  deployStore.disconnectSocket()
 })
 </script>
 

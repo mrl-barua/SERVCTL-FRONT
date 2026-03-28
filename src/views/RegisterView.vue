@@ -11,10 +11,16 @@
       <input v-model="form.email" type="email" class="auth-input" required />
 
       <label class="auth-label">Password</label>
-      <input v-model="form.password" type="password" class="auth-input" required minlength="6" />
+      <input
+        v-model="form.password"
+        type="password"
+        class="auth-input"
+        required
+        minlength="6"
+      />
 
       <button class="auth-btn" :disabled="authStore.loading">
-        {{ authStore.loading ? 'Creating account...' : 'Register' }}
+        {{ authStore.loading ? "Creating account..." : "Register" }}
       </button>
 
       <p class="auth-footer">
@@ -26,20 +32,20 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import { useToastStore } from '../stores/toast'
+import { reactive } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
+import { useToastStore } from "../stores/toast";
 
-const router = useRouter()
-const authStore = useAuthStore()
-const toastStore = useToastStore()
+const router = useRouter();
+const authStore = useAuthStore();
+const toastStore = useToastStore();
 
 const form = reactive({
-  name: '',
-  email: '',
-  password: '',
-})
+  name: "",
+  email: "",
+  password: "",
+});
 
 async function handleSubmit() {
   try {
@@ -47,12 +53,15 @@ async function handleSubmit() {
       name: form.name,
       email: form.email,
       password: form.password,
-    })
-    toastStore.showToast('Account created successfully', 'success')
-    router.push({ name: 'overview' })
+    });
+    toastStore.showToast("Account created successfully", "success");
+    router.push({ name: "overview" });
   } catch (error) {
-    const message = error?.response?.data?.message || 'Registration failed'
-    toastStore.showToast(Array.isArray(message) ? message.join(', ') : message, 'error')
+    const message = error?.response?.data?.message || "Registration failed";
+    toastStore.showToast(
+      Array.isArray(message) ? message.join(", ") : message,
+      "error",
+    );
   }
 }
 </script>

@@ -8,38 +8,26 @@
     <div class="sidebar-section">
       <div class="sidebar-label">navigation</div>
       <router-link to="/" custom v-slot="{ isActive, navigate }">
-        <button
-          @click="navigate"
-          :class="['nav-item', { active: isActive }]"
-        >
+        <button @click="navigate" :class="['nav-item', { active: isActive }]">
           <span class="icon">⬡</span> Overview
           <span class="nav-count">{{ serversStore.totalServers }}</span>
         </button>
       </router-link>
 
       <router-link to="/terminal" custom v-slot="{ isActive, navigate }">
-        <button
-          @click="navigate"
-          :class="['nav-item', { active: isActive }]"
-        >
+        <button @click="navigate" :class="['nav-item', { active: isActive }]">
           <span class="icon">&gt;_</span> Terminal
         </button>
       </router-link>
 
       <router-link to="/deploy" custom v-slot="{ isActive, navigate }">
-        <button
-          @click="navigate"
-          :class="['nav-item', { active: isActive }]"
-        >
+        <button @click="navigate" :class="['nav-item', { active: isActive }]">
           <span class="icon">↑</span> Deploy
         </button>
       </router-link>
 
       <router-link to="/logs" custom v-slot="{ isActive, navigate }">
-        <button
-          @click="navigate"
-          :class="['nav-item', { active: isActive }]"
-        >
+        <button @click="navigate" :class="['nav-item', { active: isActive }]">
           <span class="icon">≡</span> Logs
         </button>
       </router-link>
@@ -71,24 +59,24 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
-import { useServersStore } from '../../stores/servers'
+import { onMounted } from "vue";
+import { useServersStore } from "../../stores/servers";
 
-const serversStore = useServersStore()
+const serversStore = useServersStore();
 
-const envOrder = ['prod', 'live', 'qa', 'test']
+const envOrder = ["prod", "live", "qa", "test"];
 const envLabels = {
-  prod: 'Production',
-  live: 'Live',
-  qa: 'QA',
-  test: 'Testing',
-}
+  prod: "Production",
+  live: "Live",
+  qa: "QA",
+  test: "Testing",
+};
 
 onMounted(async () => {
   if (serversStore.servers.length === 0) {
-    await serversStore.fetchServers()
+    await serversStore.fetchServers();
   }
-})
+});
 </script>
 
 <style scoped>
@@ -144,7 +132,9 @@ onMounted(async () => {
   font-size: 12px;
   color: var(--text2);
   cursor: pointer;
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
   border: none;
   background: none;
   width: 100%;
@@ -203,7 +193,9 @@ onMounted(async () => {
   font-size: 11px;
   color: var(--text2);
   cursor: pointer;
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
   text-decoration: none;
 }
 
@@ -239,7 +231,8 @@ onMounted(async () => {
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     box-shadow: 0 0 6px var(--green);
   }

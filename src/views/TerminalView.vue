@@ -6,7 +6,7 @@
         <strong>SSH link protocol</strong> — clicking the SSH button opens <code>ssh://</code> URIs. On Ubuntu, register a URI handler with:
         <code>xdg-mime default xterm.desktop x-scheme-handler/ssh</code>
         or use the copy-command button to paste into any terminal.
-        The simulated terminal below lets you run predefined commands.
+        The terminal below runs allowlisted commands through the backend websocket terminal module.
       </div>
     </div>
 
@@ -47,6 +47,16 @@ watch(
     }
   },
   { immediate: true },
+)
+
+watch(
+  () => serversStore.servers,
+  (servers) => {
+    if (!selectedServerId.value && servers.length > 0) {
+      selectedServerId.value = servers[0].id
+    }
+  },
+  { deep: true, immediate: true },
 )
 </script>
 

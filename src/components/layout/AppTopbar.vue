@@ -7,69 +7,76 @@
       <button class="tb-btn" @click="handleLogout">logout</button>
     </div>
 
-    <AddServerModal v-if="showModal" @close="closeAddModal" @add="handleAddServer" />
+    <AddServerModal
+      v-if="showModal"
+      @close="closeAddModal"
+      @add="handleAddServer"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useServersStore } from '../../stores/servers'
-import { useAuthStore } from '../../stores/auth'
-import { useToastStore } from '../../stores/toast'
-import AddServerModal from '../servers/AddServerModal.vue'
+import { computed, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useServersStore } from "../../stores/servers";
+import { useAuthStore } from "../../stores/auth";
+import { useToastStore } from "../../stores/toast";
+import AddServerModal from "../servers/AddServerModal.vue";
 
-const route = useRoute()
-const router = useRouter()
-const serversStore = useServersStore()
-const authStore = useAuthStore()
-const toastStore = useToastStore()
+const route = useRoute();
+const router = useRouter();
+const serversStore = useServersStore();
+const authStore = useAuthStore();
+const toastStore = useToastStore();
 
-const showModal = ref(false)
+const showModal = ref(false);
 
 const routeTitles = {
-  overview: 'Overview',
-  terminal: 'Terminal',
-  deploy: 'Deploy',
-  logs: 'Logs',
-}
+  overview: "Overview",
+  terminal: "Terminal",
+  deploy: "Deploy",
+  logs: "Logs",
+};
 
 const routeTitle = computed(() => {
-  const name = route.name || 'overview'
-  return routeTitles[name] || 'Overview'
-})
+  const name = route.name || "overview";
+  return routeTitles[name] || "Overview";
+});
 
 async function handlePingAll() {
   try {
-    await serversStore.pingAll()
-    toastStore.showToast('Status updates completed', 'success')
+    await serversStore.pingAll();
+    toastStore.showToast("Status updates completed", "success");
   } catch {
-    toastStore.showToast('Failed to update server status', 'error')
+    toastStore.showToast("Failed to update server status", "error");
   }
 }
 
 function openAddModal() {
-  showModal.value = true
+  showModal.value = true;
 }
 
 function closeAddModal() {
-  showModal.value = false
+  showModal.value = false;
 }
 
 async function handleAddServer(serverData) {
   try {
-    await serversStore.addServer(serverData)
-    closeAddModal()
-    toastStore.showToast(`Server "${serverData.name}" added`, 'success')
+    await serversStore.addServer(serverData);
+    closeAddModal();
+    toastStore.showToast(`Server "${serverData.name}" added`, "success");
   } catch (error) {
-    const message = error?.response?.data?.message || 'Failed to add server'
-    toastStore.showToast(Array.isArray(message) ? message.join(', ') : message, 'error')
+    const message = error?.response?.data?.message || "Failed to add server";
+    toastStore.showToast(
+      Array.isArray(message) ? message.join(", ") : message,
+      "error",
+    );
   }
 }
 
 function handleLogout() {
-  authStore.logout()
-  router.push({ name: 'login' })
+  authStore.logout();
+  router.push({ name: "login" });
 }
 </script>
 

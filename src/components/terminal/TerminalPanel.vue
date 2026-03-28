@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useTerminalStore } from '../../stores/terminal'
 import { useServersStore } from '../../stores/servers'
 
@@ -96,6 +96,18 @@ watch(
   },
 )
 
+watch(
+  () => currentServer.value?.id,
+  (serverId) => {
+    if (!serverId) {
+      return
+    }
+
+    termStore.connect(serverId)
+  },
+  { immediate: true },
+)
+
 function handleRun() {
   if (!inputValue.value.trim()) return
   if (!currentServer.value) return
@@ -104,7 +116,6 @@ function handleRun() {
     inputValue.value.trim(),
     currentServer.value.user,
     currentServer.value.name,
-    currentServer.value.host,
   )
 
   inputValue.value = ''
@@ -125,6 +136,10 @@ function handleKeyDown(e) {
 function handleClear() {
   termStore.clear()
 }
+
+onBeforeUnmount(() => {
+  termStore.disconnect()
+})
 </script>
 
 <style scoped>
