@@ -2,67 +2,73 @@
   <div v-if="visible" :class="['network-banner', modeClass]">
     <template v-if="appStore.deployMode === 'cloud'">
       <div class="banner-text">
-        <span class="banner-title">You are using SERVCTL Cloud · Public servers only</span>
+        <span class="banner-title"
+          >You are using SERVCTL Cloud · Public servers only</span
+        >
         <span class="banner-subtitle">
           Private networks (192.168.x.x, 10.x.x.x) require a local install.
         </span>
       </div>
       <div class="banner-actions">
-        <RouterLink to="/install" class="banner-link">How to self-host -></RouterLink>
+        <RouterLink to="/install" class="banner-link"
+          >How to self-host -></RouterLink
+        >
         <button class="dismiss-btn" @click="dismissCloud">x</button>
       </div>
     </template>
 
     <template v-else>
-      <div class="banner-title">Running in local mode · Private networks supported</div>
+      <div class="banner-title">
+        Running in local mode · Private networks supported
+      </div>
     </template>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
-import { useAppStore } from '../stores/app'
+import { computed, onMounted, ref, watch } from "vue";
+import { RouterLink } from "vue-router";
+import { useAppStore } from "../stores/app";
 
-const CLOUD_DISMISS_KEY = 'servctl_cloud_banner_dismissed'
-const appStore = useAppStore()
-const visible = ref(false)
+const CLOUD_DISMISS_KEY = "servctl_cloud_banner_dismissed";
+const appStore = useAppStore();
+const visible = ref(false);
 
 const modeClass = computed(() =>
-  appStore.deployMode === 'cloud' ? 'cloud' : 'local',
-)
+  appStore.deployMode === "cloud" ? "cloud" : "local",
+);
 
 function dismissCloud() {
-  visible.value = false
-  sessionStorage.setItem(CLOUD_DISMISS_KEY, '1')
+  visible.value = false;
+  sessionStorage.setItem(CLOUD_DISMISS_KEY, "1");
 }
 
 onMounted(() => {
-  if (appStore.deployMode === 'cloud') {
-    visible.value = sessionStorage.getItem(CLOUD_DISMISS_KEY) !== '1'
-    return
+  if (appStore.deployMode === "cloud") {
+    visible.value = sessionStorage.getItem(CLOUD_DISMISS_KEY) !== "1";
+    return;
   }
 
-  visible.value = true
+  visible.value = true;
   setTimeout(() => {
-    visible.value = false
-  }, 4000)
-})
+    visible.value = false;
+  }, 4000);
+});
 
 watch(
   () => appStore.deployMode,
   (mode) => {
-    if (mode === 'cloud') {
-      visible.value = sessionStorage.getItem(CLOUD_DISMISS_KEY) !== '1'
-      return
+    if (mode === "cloud") {
+      visible.value = sessionStorage.getItem(CLOUD_DISMISS_KEY) !== "1";
+      return;
     }
 
-    visible.value = true
+    visible.value = true;
     setTimeout(() => {
-      visible.value = false
-    }, 4000)
+      visible.value = false;
+    }, 4000);
   },
-)
+);
 </script>
 
 <style scoped>

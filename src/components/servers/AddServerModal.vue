@@ -2,7 +2,7 @@
   <div class="modal-overlay" @click="handleBackdropClick">
     <div class="modal">
       <header class="modal-header">
-        <h2>{{ mode === 'edit' ? 'Edit Server' : 'Add Server' }}</h2>
+        <h2>{{ mode === "edit" ? "Edit Server" : "Add Server" }}</h2>
         <button class="x-btn" @click="emit('close')">x</button>
       </header>
 
@@ -24,13 +24,21 @@
           </label>
         </div>
 
-        <div v-if="networkWarning" :class="['warning-box', networkWarning.level]">
+        <div
+          v-if="networkWarning"
+          :class="['warning-box', networkWarning.level]"
+        >
           <p class="warning-title">
-            {{ networkWarning.level === 'error' ? 'X' : 'i' }} {{ networkWarning.title }}
+            {{ networkWarning.level === "error" ? "X" : "i" }}
+            {{ networkWarning.title }}
           </p>
           <p>{{ networkWarning.message }}</p>
           <p>{{ networkWarning.suggestion }}</p>
-          <RouterLink v-if="networkWarning.showInstallGuide" class="warning-link" to="/install">
+          <RouterLink
+            v-if="networkWarning.showInstallGuide"
+            class="warning-link"
+            to="/install"
+          >
             Self-host Guide
           </RouterLink>
         </div>
@@ -69,7 +77,10 @@
             :key="tab.value"
             :disabled="tab.disabled"
             :title="tab.tooltip"
-            :class="['tab-btn', { active: form.authMethod === tab.value, disabled: tab.disabled }]"
+            :class="[
+              'tab-btn',
+              { active: form.authMethod === tab.value, disabled: tab.disabled },
+            ]"
             @click="selectTab(tab.value)"
           >
             {{ tab.label }}
@@ -86,11 +97,13 @@
                 placeholder="Enter SSH password"
               />
               <button class="tiny-btn" @click="showPassword = !showPassword">
-                {{ showPassword ? 'Hide' : 'Show' }}
+                {{ showPassword ? "Hide" : "Show" }}
               </button>
             </div>
           </label>
-          <p class="pill">Passwords are encrypted with AES-256 before storage.</p>
+          <p class="pill">
+            Passwords are encrypted with AES-256 before storage.
+          </p>
         </div>
 
         <div v-else-if="form.authMethod === 'key-stored'" class="auth-panel">
@@ -115,22 +128,28 @@
                 :type="showPassphrase ? 'text' : 'password'"
                 placeholder="optional"
               />
-              <button class="tiny-btn" @click="showPassphrase = !showPassphrase">
-                {{ showPassphrase ? 'Hide' : 'Show' }}
+              <button
+                class="tiny-btn"
+                @click="showPassphrase = !showPassphrase"
+              >
+                {{ showPassphrase ? "Hide" : "Show" }}
               </button>
             </div>
           </label>
           <label class="checkbox-row">
-            <input v-model="saveToVault" type="checkbox" /> Save to Key Vault for reuse
+            <input v-model="saveToVault" type="checkbox" /> Save to Key Vault
+            for reuse
           </label>
           <p class="pill">
-            Key is encrypted before storage. We never transmit your private key to third parties.
+            Key is encrypted before storage. We never transmit your private key
+            to third parties.
           </p>
         </div>
 
         <div v-else-if="form.authMethod === 'key-path'" class="auth-panel">
           <p v-if="isCloudMode" class="pill warning">
-            Key file paths are only available in local mode. Install SERVCTL locally to use this option.
+            Key file paths are only available in local mode. Install SERVCTL
+            locally to use this option.
           </p>
           <template v-else>
             <label>
@@ -139,16 +158,28 @@
             </label>
             <label>
               Key path
-              <input v-model="form.sshKeyPath" :placeholder="keyPathPlaceholder" />
+              <input
+                v-model="form.sshKeyPath"
+                :placeholder="keyPathPlaceholder"
+              />
             </label>
             <p class="help">
-              Enter the absolute path to your private key on this machine. The file must be readable
-              by the SERVCTL backend process.
+              Enter the absolute path to your private key on this machine. The
+              file must be readable by the SERVCTL backend process.
             </p>
             <div class="verify-row">
-              <button class="tiny-btn" @click="verifyKeyPath">Verify Path</button>
-              <span v-if="keyPathStatus" :class="['verify-status', keyPathStatus.ok ? 'ok' : 'bad']">
-                {{ keyPathStatus.ok ? 'Key file found and readable' : 'File not found or not readable' }}
+              <button class="tiny-btn" @click="verifyKeyPath">
+                Verify Path
+              </button>
+              <span
+                v-if="keyPathStatus"
+                :class="['verify-status', keyPathStatus.ok ? 'ok' : 'bad']"
+              >
+                {{
+                  keyPathStatus.ok
+                    ? "Key file found and readable"
+                    : "File not found or not readable"
+                }}
               </span>
             </div>
           </template>
@@ -160,23 +191,30 @@
               Select saved key
               <select v-model="form.vaultKeyId">
                 <option disabled value="">Select a key</option>
-                <option v-for="item in keyVaultList" :key="item.id" :value="item.id">
+                <option
+                  v-for="item in keyVaultList"
+                  :key="item.id"
+                  :value="item.id"
+                >
                   {{ item.label }} ({{ truncate(item.fingerprint) }})
                 </option>
               </select>
             </label>
-            <button class="tiny-btn" @click="openVaultUpload">+ Upload New Key</button>
+            <button class="tiny-btn" @click="openVaultUpload">
+              + Upload New Key
+            </button>
           </div>
 
           <p v-if="keyVaultList.length === 0" class="help">
-            No saved keys yet. Use the SSH Key tab to upload and save your first key.
+            No saved keys yet. Use the SSH Key tab to upload and save your first
+            key.
           </p>
         </div>
       </section>
 
       <section class="section">
         <button class="collapse-btn" @click="showAdvanced = !showAdvanced">
-          Step 4 - Advanced {{ showAdvanced ? '[-]' : '[+]' }}
+          Step 4 - Advanced {{ showAdvanced ? "[-]" : "[+]" }}
         </button>
 
         <div v-if="showAdvanced" class="advanced-panel">
@@ -201,7 +239,11 @@
 
           <label>
             Deploy script command
-            <textarea v-model="form.deploy" rows="3" placeholder="git pull && npm ci && npm run build" />
+            <textarea
+              v-model="form.deploy"
+              rows="3"
+              placeholder="git pull && npm ci && npm run build"
+            />
           </label>
         </div>
       </section>
@@ -209,12 +251,16 @@
       <footer class="modal-actions">
         <button class="btn" @click="emit('close')">Cancel</button>
         <button class="btn primary" @click="handleSubmit">
-          {{ mode === 'edit' ? 'Update Server' : 'Add Server' }}
+          {{ mode === "edit" ? "Update Server" : "Add Server" }}
         </button>
       </footer>
     </div>
 
-    <div v-if="showVaultUpload" class="modal-overlay nested" @click.self="closeVaultUpload">
+    <div
+      v-if="showVaultUpload"
+      class="modal-overlay nested"
+      @click.self="closeVaultUpload"
+    >
       <div class="modal sub-modal">
         <h3>Upload Key to Vault</h3>
         <label>
@@ -231,11 +277,17 @@
         </label>
         <label>
           Passphrase (optional)
-          <input v-model="vaultUpload.passphrase" type="password" placeholder="optional" />
+          <input
+            v-model="vaultUpload.passphrase"
+            type="password"
+            placeholder="optional"
+          />
         </label>
         <div class="modal-actions">
           <button class="btn" @click="closeVaultUpload">Cancel</button>
-          <button class="btn primary" @click="uploadVaultKey">Upload & Save</button>
+          <button class="btn primary" @click="uploadVaultKey">
+            Upload & Save
+          </button>
         </div>
       </div>
     </div>
@@ -243,213 +295,222 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import { RouterLink } from 'vue-router'
-import apiClient from '../../services/http'
-import { useAppStore } from '../../stores/app'
-import { useToastStore } from '../../stores/toast'
+import { computed, onMounted, reactive, ref } from "vue";
+import { RouterLink } from "vue-router";
+import apiClient from "../../services/http";
+import { useAppStore } from "../../stores/app";
+import { useToastStore } from "../../stores/toast";
 
-const emit = defineEmits(['close', 'add'])
+const emit = defineEmits(["close", "add"]);
 
-const appStore = useAppStore()
-const toastStore = useToastStore()
+const appStore = useAppStore();
+const toastStore = useToastStore();
 
-const mode = ref('create')
-const showPassword = ref(false)
-const showPassphrase = ref(false)
-const showAdvanced = ref(false)
-const saveToVault = ref(false)
-const keyVaultList = ref([])
-const showVaultUpload = ref(false)
-const networkWarning = ref(null)
-const keyPathStatus = ref(null)
-let networkTimer = null
+const mode = ref("create");
+const showPassword = ref(false);
+const showPassphrase = ref(false);
+const showAdvanced = ref(false);
+const saveToVault = ref(false);
+const keyVaultList = ref([]);
+const showVaultUpload = ref(false);
+const networkWarning = ref(null);
+const keyPathStatus = ref(null);
+let networkTimer = null;
 
 const form = reactive({
-  name: '',
-  host: '',
+  name: "",
+  host: "",
   port: 22,
-  user: 'ubuntu',
-  env: 'prod',
-  notes: '',
-  deploy: '',
-  logPath: '',
-  logType: 'file',
-  dockerName: '',
-  authMethod: 'password',
-  password: '',
-  sshKey: '',
-  sshKeyLabel: '',
-  sshKeyPath: '',
-  vaultKeyId: '',
-  passphrase: '',
-})
+  user: "ubuntu",
+  env: "prod",
+  notes: "",
+  deploy: "",
+  logPath: "",
+  logType: "file",
+  dockerName: "",
+  authMethod: "password",
+  password: "",
+  sshKey: "",
+  sshKeyLabel: "",
+  sshKeyPath: "",
+  vaultKeyId: "",
+  passphrase: "",
+});
 
 const vaultUpload = reactive({
-  label: '',
-  privateKey: '',
-  passphrase: '',
-})
+  label: "",
+  privateKey: "",
+  passphrase: "",
+});
 
-const isCloudMode = computed(() => appStore.deployMode === 'cloud')
+const isCloudMode = computed(() => appStore.deployMode === "cloud");
 const keyPathPlaceholder = computed(() => {
-  const ua = navigator.userAgent || ''
+  const ua = navigator.userAgent || "";
   return /Windows/i.test(ua)
-    ? 'C:\\Users\\user\\.ssh\\id_rsa'
-    : '/home/user/.ssh/id_rsa'
-})
+    ? "C:\\Users\\user\\.ssh\\id_rsa"
+    : "/home/user/.ssh/id_rsa";
+});
 
 const authTabs = computed(() => [
-  { value: 'password', label: 'Password' },
-  { value: 'key-stored', label: 'SSH Key (paste)' },
+  { value: "password", label: "Password" },
+  { value: "key-stored", label: "SSH Key (paste)" },
   {
-    value: 'key-path',
-    label: 'Key File (path)',
+    value: "key-path",
+    label: "Key File (path)",
     disabled: isCloudMode.value,
     tooltip: isCloudMode.value
-      ? 'Key file paths are only available in local mode.'
-      : '',
+      ? "Key file paths are only available in local mode."
+      : "",
   },
-  { value: 'key-vault', label: 'Key Vault (saved)' },
-])
+  { value: "key-vault", label: "Key Vault (saved)" },
+]);
 
 function truncate(value) {
-  if (!value) return '-'
-  return value.length > 20 ? `${value.slice(0, 20)}...` : value
+  if (!value) return "-";
+  return value.length > 20 ? `${value.slice(0, 20)}...` : value;
 }
 
 function handleBackdropClick(e) {
   if (e.target === e.currentTarget) {
-    emit('close')
+    emit("close");
   }
 }
 
 function selectTab(tab) {
-  if (tab === 'key-path' && isCloudMode.value) {
-    toastStore.showToast('Key path authentication is only available in local mode.', 'error')
-    return
+  if (tab === "key-path" && isCloudMode.value) {
+    toastStore.showToast(
+      "Key path authentication is only available in local mode.",
+      "error",
+    );
+    return;
   }
 
-  form.authMethod = tab
+  form.authMethod = tab;
 }
 
 async function fetchKeyVault() {
   try {
-    const { data } = await apiClient.get('/keys')
-    keyVaultList.value = data
+    const { data } = await apiClient.get("/keys");
+    keyVaultList.value = data;
   } catch {
-    keyVaultList.value = []
+    keyVaultList.value = [];
   }
 }
 
 function queueNetworkWarning() {
-  if (networkTimer) clearTimeout(networkTimer)
-  networkTimer = setTimeout(checkNetworkWarning, 600)
+  if (networkTimer) clearTimeout(networkTimer);
+  networkTimer = setTimeout(checkNetworkWarning, 600);
 }
 
 async function checkNetworkWarning() {
   if (!form.host.trim()) {
-    networkWarning.value = null
-    return
+    networkWarning.value = null;
+    return;
   }
 
   try {
-    const { data } = await apiClient.get('/network/check', {
+    const { data } = await apiClient.get("/network/check", {
       params: { host: form.host.trim() },
-    })
-    networkWarning.value = data.warning
+    });
+    networkWarning.value = data.warning;
   } catch {
-    networkWarning.value = null
+    networkWarning.value = null;
   }
 }
 
 async function verifyKeyPath() {
   if (!form.sshKeyPath.trim()) {
-    toastStore.showToast('Enter a key path first', 'error')
-    return
+    toastStore.showToast("Enter a key path first", "error");
+    return;
   }
 
   try {
-    const { data } = await apiClient.post('/servers/verify-key-path', {
+    const { data } = await apiClient.post("/servers/verify-key-path", {
       path: form.sshKeyPath.trim(),
-    })
-    keyPathStatus.value = data
+    });
+    keyPathStatus.value = data;
   } catch {
     keyPathStatus.value = {
       ok: false,
-      message: 'File not found or not readable',
-    }
+      message: "File not found or not readable",
+    };
   }
 }
 
 function openVaultUpload() {
-  showVaultUpload.value = true
+  showVaultUpload.value = true;
 }
 
 function closeVaultUpload() {
-  showVaultUpload.value = false
-  vaultUpload.label = ''
-  vaultUpload.privateKey = ''
-  vaultUpload.passphrase = ''
+  showVaultUpload.value = false;
+  vaultUpload.label = "";
+  vaultUpload.privateKey = "";
+  vaultUpload.passphrase = "";
 }
 
 async function uploadVaultKey() {
   if (!vaultUpload.label.trim() || !vaultUpload.privateKey.trim()) {
-    toastStore.showToast('Label and private key are required', 'error')
-    return
+    toastStore.showToast("Label and private key are required", "error");
+    return;
   }
 
   try {
-    const { data } = await apiClient.post('/keys', {
+    const { data } = await apiClient.post("/keys", {
       label: vaultUpload.label.trim(),
       privateKey: vaultUpload.privateKey,
       passphrase: vaultUpload.passphrase || undefined,
-    })
-    await fetchKeyVault()
-    form.vaultKeyId = data.id
-    closeVaultUpload()
-    toastStore.showToast('Key uploaded to vault', 'success')
+    });
+    await fetchKeyVault();
+    form.vaultKeyId = data.id;
+    closeVaultUpload();
+    toastStore.showToast("Key uploaded to vault", "success");
   } catch (error) {
-    toastStore.showToast(error?.response?.data?.message || 'Failed to upload key', 'error')
+    toastStore.showToast(
+      error?.response?.data?.message || "Failed to upload key",
+      "error",
+    );
   }
 }
 
 async function ensureVaultSaveFromPaste() {
-  if (!saveToVault.value || form.authMethod !== 'key-stored') {
-    return
+  if (!saveToVault.value || form.authMethod !== "key-stored") {
+    return;
   }
 
-  const label = form.sshKeyLabel.trim() || 'uploaded-key'
-  const { data } = await apiClient.post('/keys', {
+  const label = form.sshKeyLabel.trim() || "uploaded-key";
+  const { data } = await apiClient.post("/keys", {
     label,
     privateKey: form.sshKey,
     passphrase: form.passphrase || undefined,
-  })
+  });
 
-  form.authMethod = 'key-vault'
-  form.vaultKeyId = data.id
-  await fetchKeyVault()
+  form.authMethod = "key-vault";
+  form.vaultKeyId = data.id;
+  await fetchKeyVault();
 }
 
 async function handleSubmit() {
   if (!form.name.trim() || !form.host.trim()) {
-    toastStore.showToast('Server name and host are required.', 'error')
-    return
+    toastStore.showToast("Server name and host are required.", "error");
+    return;
   }
 
-  if (networkWarning.value?.level === 'error') {
-    toastStore.showToast('This host is blocked in cloud mode. Use local mode instead.', 'error')
-    return
+  if (networkWarning.value?.level === "error") {
+    toastStore.showToast(
+      "This host is blocked in cloud mode. Use local mode instead.",
+      "error",
+    );
+    return;
   }
 
   try {
-    await ensureVaultSaveFromPaste()
+    await ensureVaultSaveFromPaste();
 
-    emit('add', {
+    emit("add", {
       name: form.name.trim(),
       host: form.host.trim(),
       port: Number(form.port) || 22,
-      user: form.user.trim() || 'ubuntu',
+      user: form.user.trim() || "ubuntu",
       env: form.env,
       notes: form.notes.trim(),
       deploy: form.deploy.trim() || undefined,
@@ -457,23 +518,28 @@ async function handleSubmit() {
       logType: form.logType,
       dockerName: form.dockerName.trim() || undefined,
       authMethod: form.authMethod,
-      password: form.authMethod === 'password' ? form.password : undefined,
-      sshKey: form.authMethod === 'key-stored' ? form.sshKey : undefined,
+      password: form.authMethod === "password" ? form.password : undefined,
+      sshKey: form.authMethod === "key-stored" ? form.sshKey : undefined,
       sshKeyLabel: form.sshKeyLabel.trim() || undefined,
-      sshKeyPath: form.authMethod === 'key-path' ? form.sshKeyPath.trim() : undefined,
-      vaultKeyId: form.authMethod === 'key-vault' ? form.vaultKeyId : undefined,
-    })
+      sshKeyPath:
+        form.authMethod === "key-path" ? form.sshKeyPath.trim() : undefined,
+      vaultKeyId: form.authMethod === "key-vault" ? form.vaultKeyId : undefined,
+    });
 
-    emit('close')
+    emit("close");
   } catch (error) {
-    const message = error?.response?.data?.message || 'Failed to prepare key payload'
-    toastStore.showToast(Array.isArray(message) ? message.join(', ') : message, 'error')
+    const message =
+      error?.response?.data?.message || "Failed to prepare key payload";
+    toastStore.showToast(
+      Array.isArray(message) ? message.join(", ") : message,
+      "error",
+    );
   }
 }
 
 onMounted(async () => {
-  await fetchKeyVault()
-})
+  await fetchKeyVault();
+});
 </script>
 
 <style scoped>

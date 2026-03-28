@@ -3,17 +3,17 @@
     <header>
       <h1>Self-host SERVCTL</h1>
       <p>
-        SERVCTL Cloud works great for public servers. For private networks and VPN-only
-        infrastructure, install SERVCTL locally.
+        SERVCTL Cloud works great for public servers. For private networks and
+        VPN-only infrastructure, install SERVCTL locally.
       </p>
     </header>
 
     <article class="section">
       <h2>1. Why Local?</h2>
       <p>
-        SERVCTL Cloud cannot reach private networks like home labs, office LANs, or air-gapped
-        servers. Running SERVCTL locally gives direct network access and keeps data on your own
-        machine or internal server.
+        SERVCTL Cloud cannot reach private networks like home labs, office LANs,
+        or air-gapped servers. Running SERVCTL locally gives direct network
+        access and keeps data on your own machine or internal server.
       </p>
     </article>
 
@@ -55,8 +55,8 @@
     <article class="section">
       <h2>5. Security Note</h2>
       <p>
-        SERVCTL binds to localhost by default in local runs. If you expose it on a network
-        interface, secure it with authentication and HTTPS.
+        SERVCTL binds to localhost by default in local runs. If you expose it on
+        a network interface, secure it with authentication and HTTPS.
       </p>
     </article>
   </section>
@@ -64,12 +64,12 @@
 
 <script setup>
 const installCmd = [
-  'git clone https://github.com/mrl-barua/SERVCTL-FRONT.git',
-  'cd SERVCTL-FRONT',
-  'npm install',
-  'cp .env.example .env',
-  'npm run dev',
-].join('\n')
+  "git clone https://github.com/mrl-barua/SERVCTL-FRONT.git",
+  "cd SERVCTL-FRONT",
+  "npm install",
+  "cp .env.example .env",
+  "npm run dev",
+].join("\n");
 </script>
 
 <style scoped>

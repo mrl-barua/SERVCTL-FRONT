@@ -9,8 +9,9 @@
     </header>
 
     <div class="security-banner">
-      Private keys are encrypted with AES-256-CBC before storage. Fingerprints are shown for
-      verification. Keys are never returned via the API and are only used server-side for SSH.
+      Private keys are encrypted with AES-256-CBC before storage. Fingerprints
+      are shown for verification. Keys are never returned via the API and are
+      only used server-side for SSH.
     </div>
 
     <div v-if="loading" class="muted">Loading keys...</div>
@@ -22,7 +23,8 @@
         <p class="fingerprint">{{ truncateFingerprint(key.fingerprint) }}</p>
         <p class="public-key">{{ key.publicKey.slice(0, 30) }}...</p>
         <p class="meta">
-          Created {{ formatDate(key.createdAt) }} · Used by {{ key.usedByServers }} servers
+          Created {{ formatDate(key.createdAt) }} · Used by
+          {{ key.usedByServers }} servers
         </p>
         <div class="actions">
           <button class="btn" @click="openVerify(key)">Test Connection</button>
@@ -43,16 +45,26 @@
           rows="8"
         />
         <label>Passphrase (optional)</label>
-        <input v-model="uploadForm.passphrase" type="password" placeholder="optional" />
+        <input
+          v-model="uploadForm.passphrase"
+          type="password"
+          placeholder="optional"
+        />
         <div class="actions">
           <button class="btn" @click="closeUpload">Cancel</button>
           <button class="btn primary" @click="uploadKey">Upload & Save</button>
         </div>
-        <p v-if="uploadFingerprint" class="fingerprint">Fingerprint: {{ uploadFingerprint }}</p>
+        <p v-if="uploadFingerprint" class="fingerprint">
+          Fingerprint: {{ uploadFingerprint }}
+        </p>
       </div>
     </div>
 
-    <div v-if="verifyState.visible" class="modal-overlay" @click.self="closeVerify">
+    <div
+      v-if="verifyState.visible"
+      class="modal-overlay"
+      @click.self="closeVerify"
+    >
       <div class="modal">
         <h2>Verify {{ verifyState.key?.label }}</h2>
         <label>Host</label>
@@ -60,150 +72,174 @@
         <label>User</label>
         <input v-model="verifyState.user" placeholder="ubuntu" />
         <label>Port</label>
-        <input v-model.number="verifyState.port" type="number" placeholder="22" />
+        <input
+          v-model.number="verifyState.port"
+          type="number"
+          placeholder="22"
+        />
         <div class="actions">
           <button class="btn" @click="closeVerify">Cancel</button>
-          <button class="btn primary" @click="verifyKey">Run Handshake Test</button>
+          <button class="btn primary" @click="verifyKey">
+            Run Handshake Test
+          </button>
         </div>
-        <p v-if="verifyState.message" class="muted">{{ verifyState.message }}</p>
+        <p v-if="verifyState.message" class="muted">
+          {{ verifyState.message }}
+        </p>
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
-import apiClient from '../services/http'
-import { useToastStore } from '../stores/toast'
+import { onMounted, reactive, ref } from "vue";
+import apiClient from "../services/http";
+import { useToastStore } from "../stores/toast";
 
-const toastStore = useToastStore()
-const keys = ref([])
-const loading = ref(false)
-const showUpload = ref(false)
-const uploadFingerprint = ref('')
+const toastStore = useToastStore();
+const keys = ref([]);
+const loading = ref(false);
+const showUpload = ref(false);
+const uploadFingerprint = ref("");
 
 const uploadForm = reactive({
-  label: '',
-  privateKey: '',
-  passphrase: '',
-})
+  label: "",
+  privateKey: "",
+  passphrase: "",
+});
 
 const verifyState = reactive({
   visible: false,
   key: null,
-  host: '',
-  user: 'ubuntu',
+  host: "",
+  user: "ubuntu",
   port: 22,
-  message: '',
-})
+  message: "",
+});
 
 async function fetchKeys() {
-  loading.value = true
+  loading.value = true;
   try {
-    const { data } = await apiClient.get('/keys')
-    keys.value = data
+    const { data } = await apiClient.get("/keys");
+    keys.value = data;
   } catch (error) {
-    toastStore.showToast(error?.response?.data?.message || 'Failed to load keys', 'error')
+    toastStore.showToast(
+      error?.response?.data?.message || "Failed to load keys",
+      "error",
+    );
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function formatDate(value) {
-  return new Date(value).toLocaleString()
+  return new Date(value).toLocaleString();
 }
 
 function truncateFingerprint(value) {
-  if (!value) return '-'
-  return value.length > 24 ? `${value.slice(0, 20)}...` : value
+  if (!value) return "-";
+  return value.length > 24 ? `${value.slice(0, 20)}...` : value;
 }
 
 function openUpload() {
-  showUpload.value = true
+  showUpload.value = true;
 }
 
 function closeUpload() {
-  showUpload.value = false
-  uploadFingerprint.value = ''
-  uploadForm.label = ''
-  uploadForm.privateKey = ''
-  uploadForm.passphrase = ''
+  showUpload.value = false;
+  uploadFingerprint.value = "";
+  uploadForm.label = "";
+  uploadForm.privateKey = "";
+  uploadForm.passphrase = "";
 }
 
 async function uploadKey() {
   if (!uploadForm.label.trim() || !uploadForm.privateKey.trim()) {
-    toastStore.showToast('Label and private key are required', 'error')
-    return
+    toastStore.showToast("Label and private key are required", "error");
+    return;
   }
 
   try {
-    const { data } = await apiClient.post('/keys', {
+    const { data } = await apiClient.post("/keys", {
       label: uploadForm.label.trim(),
       privateKey: uploadForm.privateKey,
       passphrase: uploadForm.passphrase || undefined,
-    })
+    });
 
-    uploadFingerprint.value = data.fingerprint
-    toastStore.showToast('SSH key uploaded successfully', 'success')
-    await fetchKeys()
+    uploadFingerprint.value = data.fingerprint;
+    toastStore.showToast("SSH key uploaded successfully", "success");
+    await fetchKeys();
   } catch (error) {
-    toastStore.showToast(error?.response?.data?.message || 'Upload failed', 'error')
+    toastStore.showToast(
+      error?.response?.data?.message || "Upload failed",
+      "error",
+    );
   }
 }
 
 function openVerify(key) {
-  verifyState.visible = true
-  verifyState.key = key
-  verifyState.host = ''
-  verifyState.user = 'ubuntu'
-  verifyState.port = 22
-  verifyState.message = ''
+  verifyState.visible = true;
+  verifyState.key = key;
+  verifyState.host = "";
+  verifyState.user = "ubuntu";
+  verifyState.port = 22;
+  verifyState.message = "";
 }
 
 function closeVerify() {
-  verifyState.visible = false
-  verifyState.key = null
-  verifyState.message = ''
+  verifyState.visible = false;
+  verifyState.key = null;
+  verifyState.message = "";
 }
 
 async function verifyKey() {
-  if (!verifyState.key) return
+  if (!verifyState.key) return;
   if (!verifyState.host.trim() || !verifyState.user.trim()) {
-    toastStore.showToast('Host and user are required for verification', 'error')
-    return
+    toastStore.showToast(
+      "Host and user are required for verification",
+      "error",
+    );
+    return;
   }
 
-  verifyState.message = 'Verifying...'
+  verifyState.message = "Verifying...";
   try {
-    const { data } = await apiClient.post(`/keys/${verifyState.key.id}/verify`, {
-      host: verifyState.host.trim(),
-      user: verifyState.user.trim(),
-      port: Number(verifyState.port) || 22,
-    })
-    verifyState.message = data.message
-    toastStore.showToast('SSH verification successful', 'success')
+    const { data } = await apiClient.post(
+      `/keys/${verifyState.key.id}/verify`,
+      {
+        host: verifyState.host.trim(),
+        user: verifyState.user.trim(),
+        port: Number(verifyState.port) || 22,
+      },
+    );
+    verifyState.message = data.message;
+    toastStore.showToast("SSH verification successful", "success");
   } catch (error) {
-    verifyState.message = error?.response?.data?.message || 'Verification failed'
-    toastStore.showToast(verifyState.message, 'error')
+    verifyState.message =
+      error?.response?.data?.message || "Verification failed";
+    toastStore.showToast(verifyState.message, "error");
   }
 }
 
 async function confirmDelete(key) {
   const ok = window.confirm(
     `${key.usedByServers} servers use this key. Are you sure you want to delete ${key.label}?`,
-  )
-  if (!ok) return
+  );
+  if (!ok) return;
 
   try {
-    await apiClient.delete(`/keys/${key.id}`)
-    toastStore.showToast('Key deleted', 'success')
-    await fetchKeys()
+    await apiClient.delete(`/keys/${key.id}`);
+    toastStore.showToast("Key deleted", "success");
+    await fetchKeys();
   } catch (error) {
-    toastStore.showToast(error?.response?.data?.message || 'Delete failed', 'error')
+    toastStore.showToast(
+      error?.response?.data?.message || "Delete failed",
+      "error",
+    );
   }
 }
 
-onMounted(fetchKeys)
+onMounted(fetchKeys);
 </script>
 
 <style scoped>
