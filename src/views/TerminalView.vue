@@ -1,6 +1,10 @@
 <template>
   <div>
-    <div v-if="!bannerDismissed" class="ssh-banner" :class="{ expanded: bannerExpanded }">
+    <div
+      v-if="!bannerDismissed"
+      class="ssh-banner"
+      :class="{ expanded: bannerExpanded }"
+    >
       <div class="ssh-banner-main" @click="bannerExpanded = !bannerExpanded">
         <span class="ssh-banner-icon">ℹ</span>
         <div class="ssh-banner-text">
@@ -16,10 +20,15 @@
       </div>
 
       <div class="ssh-banner-actions">
-        <button class="ssh-banner-toggle" @click.stop="bannerExpanded = !bannerExpanded">
+        <button
+          class="ssh-banner-toggle"
+          @click.stop="bannerExpanded = !bannerExpanded"
+        >
           {{ bannerExpanded ? "-" : "+" }}
         </button>
-        <button class="ssh-banner-dismiss" @click.stop="dismissBanner">×</button>
+        <button class="ssh-banner-dismiss" @click.stop="dismissBanner">
+          ×
+        </button>
       </div>
     </div>
 

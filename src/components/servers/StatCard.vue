@@ -29,7 +29,7 @@ const props = defineProps({
     type: String,
     default: null, // null, 'green', 'red', 'yellow'
   },
-})
+});
 
 const serversStore = useServersStore();
 
@@ -86,7 +86,8 @@ const subLabel = computed(() => {
 });
 
 const showProgress = computed(
-  () => !isTotal.value && (isOnline.value || isOffline.value || isUnknown.value),
+  () =>
+    !isTotal.value && (isOnline.value || isOffline.value || isUnknown.value),
 );
 
 const progressWidth = computed(() => {

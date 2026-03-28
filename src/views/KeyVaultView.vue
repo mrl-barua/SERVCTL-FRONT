@@ -46,7 +46,9 @@
         </div>
       </div>
 
-      <button class="btn-primary es-cta" @click="openUpload">+ Add Your First Key</button>
+      <button class="btn-primary es-cta" @click="openUpload">
+        + Add Your First Key
+      </button>
     </div>
 
     <div v-else class="keys-grid">
