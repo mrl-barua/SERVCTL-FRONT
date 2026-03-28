@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import { useAuthStore } from './stores/auth'
+import { useAppStore } from './stores/app'
 import './assets/main.css'
 
 const app = createApp(App)
@@ -12,6 +13,8 @@ app.use(pinia)
 app.use(router)
 
 const authStore = useAuthStore(pinia)
-authStore.initializeAuth().finally(() => {
+const appStore = useAppStore(pinia)
+
+Promise.allSettled([authStore.initializeAuth(), appStore.initializeConfig()]).finally(() => {
     app.mount('#app')
 })

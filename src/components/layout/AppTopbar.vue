@@ -36,6 +36,7 @@ const routeTitles = {
   terminal: "Terminal",
   deploy: "Deploy",
   logs: "Logs",
+  keys: "SSH Key Vault",
 };
 
 const routeTitle = computed(() => {

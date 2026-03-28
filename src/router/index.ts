@@ -8,6 +8,8 @@ import LogsView from '../views/LogsView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import ResetPasswordView from '../views/ResetPasswordView.vue'
+import KeyVaultView from '../views/KeyVaultView.vue'
+import InstallGuideView from '../views/InstallGuideView.vue'
 
 const routes = [
   {
@@ -19,6 +21,11 @@ const routes = [
     path: '/demo',
     name: 'demo',
     component: DemoView,
+  },
+  {
+    path: '/install',
+    name: 'install',
+    component: InstallGuideView,
   },
   {
     path: '/overview',
@@ -45,6 +52,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/keys',
+    name: 'keys',
+    component: KeyVaultView,
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/login',
     name: 'login',
     component: LoginView,
@@ -68,7 +81,8 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const token = localStorage.getItem('servctl_access_token')
-  const isAuthRoute = to.name === 'login' || to.name === 'register'
+  const isAuthRoute =
+    to.name === 'login' || to.name === 'register' || to.name === 'reset-password'
 
   if (to.meta.requiresAuth && !token) {
     return { name: 'login' }

@@ -31,6 +31,12 @@
           <span class="icon">≡</span> Logs
         </button>
       </router-link>
+
+      <router-link to="/keys" custom v-slot="{ isActive, navigate }">
+        <button @click="navigate" :class="['nav-item', { active: isActive }]">
+          <span class="icon">🔑</span> Keys
+        </button>
+      </router-link>
     </div>
 
     <div class="sidebar-servers">

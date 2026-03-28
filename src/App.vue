@@ -1,5 +1,6 @@
 <template>
   <div>
+    <NetworkModeBanner />
     <div v-if="showDashboardLayout" class="layout">
       <AppSidebar />
       <div class="main">
@@ -17,6 +18,7 @@
 <script setup>
 import { computed } from "vue";
 import { RouterView, useRoute } from "vue-router";
+import NetworkModeBanner from "./components/NetworkModeBanner.vue";
 import AppSidebar from "./components/layout/AppSidebar.vue";
 import AppTopbar from "./components/layout/AppTopbar.vue";
 import AppToast from "./components/AppToast.vue";
