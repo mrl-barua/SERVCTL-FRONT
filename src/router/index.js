@@ -7,6 +7,7 @@ import DeployView from '../views/DeployView.vue'
 import LogsView from '../views/LogsView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
+import ResetPasswordView from '../views/ResetPasswordView.vue'
 
 const routes = [
   {
@@ -52,6 +53,11 @@ const routes = [
     path: '/register',
     name: 'register',
     component: RegisterView,
+  },
+  {
+    path: '/reset-password',
+    name: 'reset-password',
+    component: ResetPasswordView,
   },
 ]
 

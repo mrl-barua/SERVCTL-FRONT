@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SERVCTL Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@500;700;800&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --bg: #0d0f14;
+            --bg2: #13161e;
+            --bg3: #1a1e28;
+            --bg4: #222636;
+            --border: #2a2f3f;
+            --border2: #363c52;
+            --text: #e8eaf0;
+            --text2: #8b90a8;
+            --text3: #555a72;
+            --accent: #4f8ef7;
+            --accent2: #2d5bb5;
+            --green: #3ecf8e;
+            --green-bg: #0d2b1f;
+            --yellow: #f5a623;
+            --red: #f25f5c;
+            --red-bg: #2b0d0d;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-display: 'Syne', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-mono);
+            min-height: 100%;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .shell {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 14px;
+            background:
+                radial-gradient(ellipse 80% 55% at 50% -10%, rgba(79, 142, 247, 0.07) 0%, transparent 70%),
+                var(--bg);
+        }
+
+        .wrap {
+            width: min(450px, 100%);
+        }
+
+        .wordmark {
+            text-align: center;
+            margin-bottom: 14px;
+            font-family: var(--font-display);
+            font-size: 17px;
+            letter-spacing: 0.08em;
+            font-weight: 800;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 12px;
+            font-size: 10px;
+            color: var(--text3);
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: var(--text2);
+        }
+
+        .card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.34);
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border: 1px solid var(--border2);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .tabs.hidden {
+            display: none;
+        }
+
+        .tab {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 10px 12px;
+            background: var(--bg3);
+            color: var(--text2);
+            border: none;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .panel {
+            display: none;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .label {
+            display: block;
+            margin: 10px 0 6px;
+            color: var(--text3);
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .input {
+            width: 100%;
+            border: 1px solid var(--border2);
+            border-radius: var(--radius);
+            background: var(--bg3);
+            color: var(--text);
+            font-size: 12px;
+            font-family: var(--font-mono);
+            padding: 10px 11px;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .submit {
+            margin-top: 14px;
+            width: 100%;
+            border: 1px solid var(--accent);
+            border-radius: var(--radius);
+            background: var(--accent);
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            padding: 10px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .submit:hover {
+            background: var(--accent2);
+            border-color: var(--accent2);
+        }
+
+        .submit:disabled {
+            opacity: 0.75;
+            cursor: not-allowed;
+        }
+
+        .forgot-link {
+            border: none;
+            background: transparent;
+            display: block;
+            width: 100%;
+            text-align: right;
+            margin-top: 6px;
+            padding: 0;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text3);
+            cursor: pointer;
+        }
+
+        .forgot-link:hover {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .register-nudge {
+            margin-top: 9px;
+            color: var(--text3);
+            font-size: 10px;
+            text-align: center;
+        }
+
+        .register-nudge a {
+            color: var(--text2);
+        }
+
+        .register-nudge a:hover {
+            color: var(--accent);
+        }
+
+        .demo-sep {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text3);
+            font-size: 11px;
+            justify-content: center;
+        }
+
+        .demo-sep::before,
+        .demo-sep::after {
+            content: '';
+            display: block;
+            height: 1px;
+            background: var(--border);
+            flex: 1;
+            max-width: 120px;
+        }
+
+        .demo-link {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 11px;
+            color: var(--accent);
+        }
+
+        .demo-link a {
+            color: var(--accent);
+        }
+
+        .demo-link a:hover {
+            text-decoration: underline;
+        }
+
+        .demo-outside.hidden {
+            display: none;
+        }
+
+        .forgot-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .top-link {
+            border: none;
+            background: transparent;
+            color: var(--text3);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .top-link:hover {
+            color: var(--text2);
+        }
+
+        .forgot-title,
+        .check-title {
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+            margin: 0 0 8px;
+            text-align: left;
+        }
+
+        .forgot-body,
+        .check-body {
+            font-size: 11px;
+            color: var(--text2);
+            line-height: 1.7;
+            margin: 0 0 12px;
+        }
+
+        .inline-error {
+            margin-top: 6px;
+            font-size: 10px;
+            color: var(--red);
+            min-height: 14px;
+        }
+
+        .spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        .submit.loading .spinner {
+            display: inline-block;
+        }
+
+        .submit.loading .label-text {
+            opacity: 0.95;
+        }
+
+        .inside-sep {
+            margin: 16px 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text3);
+            font-size: 10px;
+            justify-content: center;
+        }
+
+        .inside-sep::before,
+        .inside-sep::after {
+            content: '';
+            display: block;
+            height: 1px;
+            background: var(--border);
+            flex: 1;
+        }
+
+        .demo-inside {
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .demo-inside a {
+            color: var(--accent);
+        }
+
+        .demo-inside a:hover {
+            text-decoration: underline;
+        }
+
+        .check-wrap {
+            text-align: center;
+            padding-top: 6px;
+        }
+
+        .mail-icon {
+            color: var(--accent);
+            font-size: 36px;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .check-title {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .email-line {
+            font-size: 11px;
+            color: var(--text2);
+            margin-bottom: 4px;
+        }
+
+        .email-highlight {
+            font-size: 12px;
+            color: var(--accent);
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .expiry-note {
+            font-size: 10px;
+            color: var(--text3);
+            margin-bottom: 12px;
+        }
+
+        .resend-box {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg3);
+            padding: 10px;
+            font-size: 10px;
+            color: var(--text3);
+            margin-bottom: 14px;
+        }
+
+        .resend-btn {
+            border: none;
+            background: transparent;
+            color: var(--accent);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .resend-btn:disabled {
+            color: var(--text3);
+            cursor: not-allowed;
+        }
+
+        .resend-ok {
+            color: var(--green);
+            margin-left: 8px;
+            font-size: 10px;
+        }
+
+        .back-login {
+            border: none;
+            background: transparent;
+            color: var(--text3);
+            font-size: 10px;
+            font-family: var(--font-mono);
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .back-login:hover {
+            color: var(--text2);
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="shell">
+        <div class="wrap">
+            <a class="back-link" href="/">&larr; Back to servctl.dev</a>
+            <div class="wordmark">SERVCTL</div>
+
+            <div class="card" id="authCard">
+                <div class="tabs" id="tabsWrap">
+                    <button class="tab active" data-tab="login" type="button">Login</button>
+                    <button class="tab" data-tab="register" type="button">Register</button>
+                </div>
+
+                <div class="panel active" id="panel-login">
+                    <label class="label" for="login-email">Email</label>
+                    <input class="input" id="login-email" type="email" placeholder="you@company.dev" />
+
+                    <label class="label" for="login-password">Password</label>
+                    <input class="input" id="login-password" type="password" placeholder="........" />
+                    <button class="forgot-link" type="button" onclick="showPanelAnimated('forgot')">Forgot
+                        password?</button>
+
+                    <button class="submit" type="button">Sign In</button>
+                </div>
+
+                <div class="panel" id="panel-register">
+                    <label class="label" for="register-name">Name</label>
+                    <input class="input" id="register-name" type="text" placeholder="Jane Doe" />
+
+                    <label class="label" for="register-email">Email</label>
+                    <input class="input" id="register-email" type="email" placeholder="you@company.dev" />
+
+                    <label class="label" for="register-password">Password</label>
+                    <input class="input" id="register-password" type="password" placeholder="At least 6 characters" />
+
+                    <button class="submit" type="button">Create Account</button>
+
+                    <div class="register-nudge">
+                        Already self-hosting? &rarr;
+                        <a href="https://github.com/mrl-barua/SERVCTL-FRONT" target="_blank" rel="noreferrer">Check the
+                            setup docs</a>
+                    </div>
+                </div>
+
+                <div class="panel" id="panel-forgot">
+                    <div class="forgot-top">
+                        <button class="top-link" type="button" onclick="showPanelAnimated('login')">&larr; Back to
+                            login</button>
+                        <button class="top-link" type="button" onclick="showPanelAnimated('login')">x close</button>
+                    </div>
+
+                    <h2 class="forgot-title">Reset your password</h2>
+                    <p class="forgot-body">
+                        Enter your account email and we'll send you a reset link.
+                    </p>
+
+                    <label class="label" for="forgot-email">Email address</label>
+                    <input class="input" id="forgot-email" type="email" placeholder="you@company.dev" />
+                    <div class="inline-error" id="forgotError"></div>
+
+                    <button class="submit" id="forgotSubmit" type="button" onclick="submitForgotPassword()">
+                        <span class="spinner" aria-hidden="true"></span>
+                        <span class="label-text">Send Reset Link &rarr;</span>
+                    </button>
+
+                    <div class="inside-sep">or</div>
+                    <div class="demo-inside">
+                        <a href="/demo">⚡ Explore the demo instead &rarr;</a>
+                    </div>
+                </div>
+
+                <div class="panel" id="panel-check-email">
+                    <div class="check-wrap">
+                        <div class="mail-icon">✉</div>
+                        <h2 class="check-title">Check your email</h2>
+                        <p class="check-body">We sent a reset link to:</p>
+                        <div class="email-highlight" id="sentToEmail">user@example.com</div>
+                        <div class="expiry-note">The link expires in 15 minutes.</div>
+
+                        <div class="resend-box">
+                            <span>Didn't get it? Check spam · </span>
+                            <button id="resendBtn" class="resend-btn" type="button" onclick="resendResetEmail()">Resend
+                                email</button>
+                            <span class="resend-ok" id="resendOk"></span>
+                        </div>
+
+                        <button class="back-login" type="button" onclick="resetAndBackToLogin()">&larr; Back to
+                            login</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-outside" id="outsideDemo">
+                <div class="demo-sep">or</div>
+                <div class="demo-link">
+                    <a href="/demo">⚡ Explore the demo first — no account needed &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.SERVCTL_API_BASE || `${window.location.protocol}//${window.location.hostname}:3000`;
+
+        const panels = ['login', 'register', 'forgot', 'check-email'];
+        const tabsWrap = document.getElementById('tabsWrap');
+        const outsideDemo = document.getElementById('outsideDemo');
+        const forgotEmailInput = document.getElementById('forgot-email');
+        const forgotError = document.getElementById('forgotError');
+        const forgotSubmit = document.getElementById('forgotSubmit');
+        const sentToEmail = document.getElementById('sentToEmail');
+        const resendBtn = document.getElementById('resendBtn');
+        const resendOk = document.getElementById('resendOk');
+
+        let forgotEmailState = '';
+        let resendCooldown = 0;
+        let resendTimer = null;
+
+        function updateContextForPanel(name) {
+            const authTabsMode = name === 'login' || name === 'register';
+            tabsWrap.classList.toggle('hidden', !authTabsMode);
+            outsideDemo.classList.toggle('hidden', !authTabsMode);
+        }
+
+        function showPanel(name) {
+            panels.forEach((p) => {
+                const el = document.getElementById(`panel-${p}`);
+                el.style.display = p === name ? 'block' : 'none';
+                el.classList.toggle('active', p === name);
+                if (p === name) {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateX(0)';
+                    el.style.transition = '';
+                }
+            });
+
+            updateContextForPanel(name);
+            if (name === 'login' || name === 'register') {
+                document.querySelectorAll('.tab').forEach((tab) => {
+                    tab.classList.toggle('active', tab.getAttribute('data-tab') === name);
+                });
+            }
+        }
+
+        function showPanelAnimated(name) {
+            const el = document.getElementById(`panel-${name}`);
+            updateContextForPanel(name);
+
+            panels.filter((p) => p !== name).forEach((p) => {
+                const panel = document.getElementById(`panel-${p}`);
+                panel.style.display = 'none';
+                panel.classList.remove('active');
+            });
+
+            el.style.display = 'block';
+            el.classList.add('active');
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(24px)';
+            requestAnimationFrame(() => {
+                el.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+                el.style.opacity = '1';
+                el.style.transform = 'translateX(0)';
+            });
+
+            if (name === 'forgot') {
+                forgotError.textContent = '';
+            }
+        }
+
+        function resetForgotUiState() {
+            forgotError.textContent = '';
+            forgotSubmit.disabled = false;
+            forgotSubmit.classList.remove('loading');
+            forgotSubmit.querySelector('.label-text').textContent = 'Send Reset Link →';
+            resendOk.textContent = '';
+            resendCooldown = 0;
+            clearInterval(resendTimer);
+            resendBtn.disabled = false;
+            resendBtn.textContent = 'Resend email';
+        }
+
+        function resetAndBackToLogin() {
+            resetForgotUiState();
+            forgotEmailState = '';
+            showPanelAnimated('login');
+        }
+
+        async function submitForgotPassword() {
+            const email = forgotEmailInput.value.trim();
+            forgotError.textContent = '';
+
+            if (!email) {
+                forgotError.textContent = '✗ Please enter your email address.';
+                return;
+            }
+
+            forgotSubmit.disabled = true;
+            forgotSubmit.classList.add('loading');
+            forgotSubmit.querySelector('.label-text').textContent = 'Sending...';
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email }),
+                });
+
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    const message = data?.message || 'Unable to send reset link right now.';
+                    forgotError.textContent = `✗ ${Array.isArray(message) ? message[0] : message}`;
+                    return;
+                }
+
+                forgotEmailState = email;
+                sentToEmail.textContent = email;
+                showPanelAnimated('check-email');
+            } catch {
+                forgotError.textContent = '✗ Network error. Please try again.';
+            } finally {
+                forgotSubmit.disabled = false;
+                forgotSubmit.classList.remove('loading');
+                forgotSubmit.querySelector('.label-text').textContent = 'Send Reset Link →';
+            }
+        }
+
+        function startResendCooldown() {
+            resendCooldown = 60;
+            resendBtn.disabled = true;
+            resendBtn.textContent = `Resend in ${resendCooldown}s...`;
+
+            clearInterval(resendTimer);
+            resendTimer = setInterval(() => {
+                resendCooldown -= 1;
+                if (resendCooldown <= 0) {
+                    clearInterval(resendTimer);
+                    resendBtn.disabled = false;
+                    resendBtn.textContent = 'Resend email';
+                    return;
+                }
+                resendBtn.textContent = `Resend in ${resendCooldown}s...`;
+            }, 1000);
+        }
+
+        async function resendResetEmail() {
+            if (!forgotEmailState || resendCooldown > 0) {
+                return;
+            }
+
+            resendBtn.disabled = true;
+            resendBtn.textContent = 'Sending...';
+            resendOk.textContent = '';
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/resend-reset`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: forgotEmailState }),
+                });
+
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    const message = data?.message || 'Unable to resend right now.';
+                    resendBtn.disabled = false;
+                    resendBtn.textContent = Array.isArray(message) ? message[0] : message;
+                    setTimeout(() => {
+                        if (resendCooldown <= 0) {
+                            resendBtn.textContent = 'Resend email';
+                        }
+                    }, 1800);
+                    return;
+                }
+
+                resendOk.textContent = 'Sent!';
+                setTimeout(() => {
+                    resendOk.textContent = '';
+                }, 3000);
+
+                startResendCooldown();
+            } catch {
+                resendBtn.disabled = false;
+                resendBtn.textContent = 'Try again';
+            }
+        }
+
+        document.querySelectorAll('.tab').forEach((tab) => {
+            tab.addEventListener('click', () => {
+                showPanel(tab.getAttribute('data-tab'));
+            });
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const startPanel = urlParams.get('panel');
+            if (startPanel && panels.includes(startPanel)) {
+                if (startPanel === 'forgot' || startPanel === 'check-email') {
+                    showPanelAnimated(startPanel);
+                } else {
+                    showPanel(startPanel);
+                }
+            } else {
+                showPanel('login');
+            }
+
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 10);
+        });
+    </script>
+</body>
+
+</html>
