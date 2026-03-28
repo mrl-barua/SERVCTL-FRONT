@@ -7,7 +7,7 @@
 
     <div class="sidebar-section">
       <div class="sidebar-label">navigation</div>
-      <router-link to="/" custom v-slot="{ isActive, navigate }">
+      <router-link to="/overview" custom v-slot="{ isActive, navigate }">
         <button @click="navigate" :class="['nav-item', { active: isActive }]">
           <span class="icon">⬡</span> Overview
           <span class="nav-count">{{ serversStore.totalServers }}</span>
