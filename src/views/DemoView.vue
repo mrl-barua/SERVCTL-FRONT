@@ -2,7 +2,8 @@
   <div class="demo-page">
     <div class="demo-banner">
       <span>
-        You are exploring the SERVCTL demo in read-only mode. Resets every 30 min.
+        You are exploring the SERVCTL demo in read-only mode. Resets every 30
+        min.
       </span>
       <RouterLink to="/login" class="signup">Sign Up Free</RouterLink>
       <a
@@ -35,7 +36,9 @@
           @click="switchView(item.id)"
         >
           <span>{{ item.label }}</span>
-          <span v-if="item.id === 'overview'" class="nav-count">{{ state.servers.length }}</span>
+          <span v-if="item.id === 'overview'" class="nav-count">{{
+            state.servers.length
+          }}</span>
         </button>
 
         <div class="server-list">
@@ -49,7 +52,10 @@
               type="button"
               @click="state.selectedServerId = server.id"
             >
-              <span class="status-dot" :class="`status-${server.status}`"></span>
+              <span
+                class="status-dot"
+                :class="`status-${server.status}`"
+              ></span>
               <span>{{ server.name }}</span>
             </button>
           </template>
@@ -60,9 +66,19 @@
         <div class="topbar">
           <div class="topbar-title">{{ viewTitle }}</div>
           <div class="tb-actions">
-            <button class="tb-btn" type="button" @click="pingAll">ping all</button>
-            <button class="tb-btn primary" type="button" @click="openDemoGate()">+ add server</button>
-            <div class="reset-timer">Demo resets in {{ formatTimer(state.resetInSeconds) }}</div>
+            <button class="tb-btn" type="button" @click="pingAll">
+              ping all
+            </button>
+            <button
+              class="tb-btn primary"
+              type="button"
+              @click="openDemoGate()"
+            >
+              + add server
+            </button>
+            <div class="reset-timer">
+              Demo resets in {{ formatTimer(state.resetInSeconds) }}
+            </div>
           </div>
         </div>
 
@@ -97,25 +113,62 @@
                 <div class="card-top">
                   <div>
                     <div class="card-name">{{ server.name }}</div>
-                    <div class="card-host">{{ server.user }}@{{ server.host }}:{{ server.port }}</div>
+                    <div class="card-host">
+                      {{ server.user }}@{{ server.host }}:{{ server.port }}
+                    </div>
                   </div>
                   <span class="env-badge">{{ server.environment }}</span>
                 </div>
 
                 <div class="card-status">
-                  <span class="status-dot" :class="`status-${server.status}`"></span>
+                  <span
+                    class="status-dot"
+                    :class="`status-${server.status}`"
+                  ></span>
                   <span class="status-text">{{ server.status }}</span>
                   <span>uptime {{ server.uptime }}%</span>
                 </div>
 
-                <div class="uptime"><span :style="{ width: `${server.uptime}%` }"></span></div>
+                <div class="uptime">
+                  <span :style="{ width: `${server.uptime}%` }"></span>
+                </div>
 
                 <div class="actions">
-                  <button class="card-btn" type="button" @click="openDemoGate(sshMsg(server.name))">SSH</button>
-                  <button class="card-btn" type="button" @click="copySsh(server)">copy cmd</button>
-                  <button class="card-btn" type="button" @click="openDemoGate()">deploy</button>
-                  <button class="card-btn" type="button" @click="switchToLogs(server.id)">logs</button>
-                  <button class="card-btn" type="button" @click="openDemoGate()">delete</button>
+                  <button
+                    class="card-btn"
+                    type="button"
+                    @click="openDemoGate(sshMsg(server.name))"
+                  >
+                    SSH
+                  </button>
+                  <button
+                    class="card-btn"
+                    type="button"
+                    @click="copySsh(server)"
+                  >
+                    copy cmd
+                  </button>
+                  <button
+                    class="card-btn"
+                    type="button"
+                    @click="openDemoGate()"
+                  >
+                    deploy
+                  </button>
+                  <button
+                    class="card-btn"
+                    type="button"
+                    @click="switchToLogs(server.id)"
+                  >
+                    logs
+                  </button>
+                  <button
+                    class="card-btn"
+                    type="button"
+                    @click="openDemoGate()"
+                  >
+                    delete
+                  </button>
                 </div>
               </article>
             </div>
@@ -123,7 +176,7 @@
 
           <section v-if="state.view === 'terminal'" class="terminal-box">
             <div class="terminal-toolbar">
-              <span>Connected to {{ selectedServer?.name || 'n/a' }}</span>
+              <span>Connected to {{ selectedServer?.name || "n/a" }}</span>
               <div class="spacer"></div>
               <button
                 v-for="cmd in quickCmds"
@@ -136,7 +189,11 @@
               </button>
             </div>
             <div class="terminal-screen" ref="terminalScreen">
-              <div v-for="(line, idx) in state.terminalLines" :key="idx" :class="`line-${line.type}`">
+              <div
+                v-for="(line, idx) in state.terminalLines"
+                :key="idx"
+                :class="`line-${line.type}`"
+              >
                 {{ line.text }}
               </div>
             </div>
@@ -169,28 +226,44 @@
               />
             </div>
             <div class="logs-list">
-              <div v-if="filteredLogs.length === 0" class="empty">No logs match current filters.</div>
+              <div v-if="filteredLogs.length === 0" class="empty">
+                No logs match current filters.
+              </div>
               <div v-for="log in filteredLogs" :key="log.id" class="log-row">
                 <div class="log-ts">{{ log.ts }}</div>
-                <div class="log-lvl" :class="`lvl-${log.level}`">{{ log.level }}</div>
+                <div class="log-lvl" :class="`lvl-${log.level}`">
+                  {{ log.level }}
+                </div>
                 <div class="log-msg">{{ log.message }}</div>
               </div>
             </div>
           </section>
 
           <section v-if="state.view === 'deploy'" class="deploy-grid">
-            <article v-for="server in state.servers" :key="server.id" class="deploy-card">
+            <article
+              v-for="server in state.servers"
+              :key="server.id"
+              class="deploy-card"
+            >
               <div class="deploy-head">
                 <div>
                   <div class="deploy-name">{{ server.name }}</div>
-                  <div class="deploy-script">deploy/{{ server.environment }}.yml</div>
+                  <div class="deploy-script">
+                    deploy/{{ server.environment }}.yml
+                  </div>
                 </div>
                 <span class="deploy-status">idle</span>
               </div>
               <ol class="deploy-steps">
                 <li v-for="step in deploySteps" :key="step">{{ step }}</li>
               </ol>
-              <button class="tb-btn primary" type="button" @click="openDemoGate()">Start deploy</button>
+              <button
+                class="tb-btn primary"
+                type="button"
+                @click="openDemoGate()"
+              >
+                Start deploy
+              </button>
             </article>
           </section>
         </div>
@@ -198,219 +271,320 @@
     </div>
 
     <div class="toast-wrap">
-      <div v-for="toast in state.toasts" :key="toast.id" class="toast">{{ toast.message }}</div>
+      <div v-for="toast in state.toasts" :key="toast.id" class="toast">
+        {{ toast.message }}
+      </div>
     </div>
 
-    <div class="modal-overlay" :class="{ open: state.demoGateOpen }" @click.self="closeDemoGate">
+    <div
+      class="modal-overlay"
+      :class="{ open: state.demoGateOpen }"
+      @click.self="closeDemoGate"
+    >
       <div class="modal">
         <h3 class="modal-title">Demo is intentionally sandboxed</h3>
         <div class="modal-body">{{ state.demoGateMessage }}</div>
         <div class="modal-actions">
-          <RouterLink class="primary" to="/login">Sign Up and Self-host</RouterLink>
-          <a href="https://github.com/mrl-barua/SERVCTL-FRONT" target="_blank" rel="noreferrer">View Setup Guide</a>
+          <RouterLink class="primary" to="/login"
+            >Sign Up and Self-host</RouterLink
+          >
+          <a
+            href="https://github.com/mrl-barua/SERVCTL-FRONT"
+            target="_blank"
+            rel="noreferrer"
+            >View Setup Guide</a
+          >
         </div>
-        <button class="modal-close" type="button" @click="closeDemoGate">Continue exploring demo</button>
+        <button class="modal-close" type="button" @click="closeDemoGate">
+          Continue exploring demo
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+} from "vue";
+import { RouterLink } from "vue-router";
 
 const navItems = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'terminal', label: 'Terminal' },
-  { id: 'deploy', label: 'Deploy' },
-  { id: 'logs', label: 'Logs' },
-]
+  { id: "overview", label: "Overview" },
+  { id: "terminal", label: "Terminal" },
+  { id: "deploy", label: "Deploy" },
+  { id: "logs", label: "Logs" },
+];
 
-const deploySteps = ['Validate config', 'Pull source', 'Install deps', 'Build', 'Restart service', 'Health checks']
-const quickCmds = ['uptime', 'df -h', 'free -m', 'systemctl status nginx']
+const deploySteps = [
+  "Validate config",
+  "Pull source",
+  "Install deps",
+  "Build",
+  "Restart service",
+  "Health checks",
+];
+const quickCmds = ["uptime", "df -h", "free -m", "systemctl status nginx"];
 
 const seedServers = [
-  { id: 'srv-1', name: 'web-prod-01', environment: 'prod', host: '10.0.1.10', port: 22, user: 'ubuntu', status: 'online', uptime: 99.8 },
-  { id: 'srv-2', name: 'db-prod-01', environment: 'prod', host: '10.0.1.11', port: 22, user: 'ubuntu', status: 'online', uptime: 99.9 },
-  { id: 'srv-3', name: 'web-live-01', environment: 'live', host: '10.0.2.10', port: 22, user: 'ubuntu', status: 'online', uptime: 97.2 },
-  { id: 'srv-4', name: 'web-qa-01', environment: 'qa', host: '10.0.3.10', port: 22, user: 'ubuntu', status: 'online', uptime: 94.1 },
-  { id: 'srv-5', name: 'api-qa-01', environment: 'qa', host: '10.0.3.11', port: 22, user: 'ubuntu', status: 'unknown', uptime: 87.5 },
-  { id: 'srv-6', name: 'dev-test-01', environment: 'test', host: '10.0.4.10', port: 2222, user: 'dev', status: 'online', uptime: 78 },
-  { id: 'srv-7', name: 'load-test-01', environment: 'test', host: '10.0.4.11', port: 22, user: 'dev', status: 'offline', uptime: 0 },
-]
+  {
+    id: "srv-1",
+    name: "web-prod-01",
+    environment: "prod",
+    host: "10.0.1.10",
+    port: 22,
+    user: "ubuntu",
+    status: "online",
+    uptime: 99.8,
+  },
+  {
+    id: "srv-2",
+    name: "db-prod-01",
+    environment: "prod",
+    host: "10.0.1.11",
+    port: 22,
+    user: "ubuntu",
+    status: "online",
+    uptime: 99.9,
+  },
+  {
+    id: "srv-3",
+    name: "web-live-01",
+    environment: "live",
+    host: "10.0.2.10",
+    port: 22,
+    user: "ubuntu",
+    status: "online",
+    uptime: 97.2,
+  },
+  {
+    id: "srv-4",
+    name: "web-qa-01",
+    environment: "qa",
+    host: "10.0.3.10",
+    port: 22,
+    user: "ubuntu",
+    status: "online",
+    uptime: 94.1,
+  },
+  {
+    id: "srv-5",
+    name: "api-qa-01",
+    environment: "qa",
+    host: "10.0.3.11",
+    port: 22,
+    user: "ubuntu",
+    status: "unknown",
+    uptime: 87.5,
+  },
+  {
+    id: "srv-6",
+    name: "dev-test-01",
+    environment: "test",
+    host: "10.0.4.10",
+    port: 2222,
+    user: "dev",
+    status: "online",
+    uptime: 78,
+  },
+  {
+    id: "srv-7",
+    name: "load-test-01",
+    environment: "test",
+    host: "10.0.4.11",
+    port: 22,
+    user: "dev",
+    status: "offline",
+    uptime: 0,
+  },
+];
 
 const logSamples = [
-  'HTTP 200 GET /health in 12ms',
-  'Deploy pipeline waiting for artifact approval',
-  'Nginx worker recycled after config update',
-  'Redis cache hit ratio 97%',
-  'Disk usage warning on /var/log',
-  'SSH handshake accepted from 10.2.0.8',
-]
+  "HTTP 200 GET /health in 12ms",
+  "Deploy pipeline waiting for artifact approval",
+  "Nginx worker recycled after config update",
+  "Redis cache hit ratio 97%",
+  "Disk usage warning on /var/log",
+  "SSH handshake accepted from 10.2.0.8",
+];
 
-const terminalScreen = ref(null)
-const resetStart = 30 * 60
+const terminalScreen = ref(null);
+const resetStart = 30 * 60;
 
 const state = reactive({
-  view: 'overview',
+  view: "overview",
   servers: structuredClone(seedServers),
   selectedServerId: seedServers[0].id,
   terminalLines: [
-    { type: 'prompt', text: 'demo@sandbox:~$ Welcome to SERVCTL demo terminal' },
-    { type: 'output', text: 'Read-only mode: commands are simulated for preview.' },
+    {
+      type: "prompt",
+      text: "demo@sandbox:~$ Welcome to SERVCTL demo terminal",
+    },
+    {
+      type: "output",
+      text: "Read-only mode: commands are simulated for preview.",
+    },
   ],
-  terminalInput: '',
+  terminalInput: "",
   logs: [],
-  logLevelFilter: 'ALL',
-  logQuery: '',
+  logLevelFilter: "ALL",
+  logQuery: "",
   resetInSeconds: resetStart,
   demoGateOpen: false,
   demoGateMessage:
-    'The live demo is read-only and sandboxed. To use SSH, deploy pipelines, and add your own servers, self-host SERVCTL in your own environment.',
+    "The live demo is read-only and sandboxed. To use SSH, deploy pipelines, and add your own servers, self-host SERVCTL in your own environment.",
   toasts: [],
-})
+});
 
-let timerHandle = null
-let logTailHandle = null
+let timerHandle = null;
+let logTailHandle = null;
 
-const selectedServer = computed(() => state.servers.find((s) => s.id === state.selectedServerId) || null)
+const selectedServer = computed(
+  () => state.servers.find((s) => s.id === state.selectedServerId) || null,
+);
 
 const groupedServers = computed(() => {
   const groups = [
-    { env: 'prod', title: 'Production' },
-    { env: 'live', title: 'Live' },
-    { env: 'qa', title: 'QA' },
-    { env: 'test', title: 'Testing' },
-  ]
+    { env: "prod", title: "Production" },
+    { env: "live", title: "Live" },
+    { env: "qa", title: "QA" },
+    { env: "test", title: "Testing" },
+  ];
 
   return groups.map((group) => ({
     ...group,
     items: state.servers.filter((server) => server.environment === group.env),
-  }))
-})
+  }));
+});
 
 const counts = computed(() => ({
   total: state.servers.length,
-  online: state.servers.filter((s) => s.status === 'online').length,
-  offline: state.servers.filter((s) => s.status === 'offline').length,
-  unknown: state.servers.filter((s) => s.status === 'unknown').length,
-}))
+  online: state.servers.filter((s) => s.status === "online").length,
+  offline: state.servers.filter((s) => s.status === "offline").length,
+  unknown: state.servers.filter((s) => s.status === "unknown").length,
+}));
 
 const viewTitle = computed(() => {
-  if (state.view === 'overview') return 'Overview'
-  if (state.view === 'terminal') return 'Terminal'
-  if (state.view === 'deploy') return 'Deploy'
-  return 'Logs'
-})
+  if (state.view === "overview") return "Overview";
+  if (state.view === "terminal") return "Terminal";
+  if (state.view === "deploy") return "Deploy";
+  return "Logs";
+});
 
 const filteredLogs = computed(() => {
-  const query = state.logQuery.trim().toLowerCase()
+  const query = state.logQuery.trim().toLowerCase();
   return state.logs.filter((entry) => {
-    const levelOk = state.logLevelFilter === 'ALL' || entry.level === state.logLevelFilter
-    const queryOk = !query || entry.message.toLowerCase().includes(query)
-    return levelOk && queryOk
-  })
-})
+    const levelOk =
+      state.logLevelFilter === "ALL" || entry.level === state.logLevelFilter;
+    const queryOk = !query || entry.message.toLowerCase().includes(query);
+    return levelOk && queryOk;
+  });
+});
 
 function formatTimer(seconds) {
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
 function showToast(message) {
-  const toast = { id: `${Date.now()}-${Math.random()}`, message }
-  state.toasts.push(toast)
+  const toast = { id: `${Date.now()}-${Math.random()}`, message };
+  state.toasts.push(toast);
   setTimeout(() => {
-    state.toasts = state.toasts.filter((item) => item.id !== toast.id)
-  }, 2100)
+    state.toasts = state.toasts.filter((item) => item.id !== toast.id);
+  }, 2100);
 }
 
 function openDemoGate(customMessage) {
   state.demoGateMessage =
     customMessage ||
-    'The live demo is read-only and sandboxed. To use SSH, deploy pipelines, and add your own servers, self-host SERVCTL in your own environment.'
-  state.demoGateOpen = true
+    "The live demo is read-only and sandboxed. To use SSH, deploy pipelines, and add your own servers, self-host SERVCTL in your own environment.";
+  state.demoGateOpen = true;
 }
 
 function closeDemoGate() {
-  state.demoGateOpen = false
+  state.demoGateOpen = false;
 }
 
 function switchView(viewName) {
-  state.view = viewName
+  state.view = viewName;
 }
 
 function switchToLogs(serverId) {
-  state.selectedServerId = serverId
-  state.view = 'logs'
+  state.selectedServerId = serverId;
+  state.view = "logs";
 }
 
 function sshMsg(serverName) {
-  return `Direct SSH is disabled in demo mode for safety.\n\nTo run real commands on ${serverName}, sign up and self-host SERVCTL.`
+  return `Direct SSH is disabled in demo mode for safety.\n\nTo run real commands on ${serverName}, sign up and self-host SERVCTL.`;
 }
 
 async function copySsh(server) {
-  const command = `ssh ${server.user}@${server.host} -p ${server.port}`
+  const command = `ssh ${server.user}@${server.host} -p ${server.port}`;
   try {
-    await navigator.clipboard.writeText(command)
-    showToast('SSH command copied')
+    await navigator.clipboard.writeText(command);
+    showToast("SSH command copied");
   } catch {
-    showToast('Could not copy command')
+    showToast("Could not copy command");
   }
 }
 
 function pushTerminal(type, text) {
-  state.terminalLines.push({ type, text })
+  state.terminalLines.push({ type, text });
   nextTick(() => {
     if (terminalScreen.value) {
-      terminalScreen.value.scrollTop = terminalScreen.value.scrollHeight
+      terminalScreen.value.scrollTop = terminalScreen.value.scrollHeight;
     }
-  })
+  });
 }
 
 function runTerminal(command) {
-  const server = selectedServer.value
-  pushTerminal('prompt', `demo@${server?.name || 'sandbox'}:~$ ${command}`)
+  const server = selectedServer.value;
+  pushTerminal("prompt", `demo@${server?.name || "sandbox"}:~$ ${command}`);
 
   if (/^sudo\s+/i.test(command)) {
-    pushTerminal('error', 'sudo is blocked in demo mode.')
-    return
+    pushTerminal("error", "sudo is blocked in demo mode.");
+    return;
   }
 
-  if (command === 'uptime') {
-    pushTerminal('output', 'up 42 days, 06:11, load average: 0.12 0.08 0.05')
-    return
+  if (command === "uptime") {
+    pushTerminal("output", "up 42 days, 06:11, load average: 0.12 0.08 0.05");
+    return;
   }
 
-  if (command === 'df -h') {
-    pushTerminal('output', '/dev/sda1 50G 18G 30G 38% /')
-    return
+  if (command === "df -h") {
+    pushTerminal("output", "/dev/sda1 50G 18G 30G 38% /");
+    return;
   }
 
-  if (command === 'free -m') {
-    pushTerminal('output', 'Mem: 4096 total, 1932 used, 2164 free')
-    return
+  if (command === "free -m") {
+    pushTerminal("output", "Mem: 4096 total, 1932 used, 2164 free");
+    return;
   }
 
-  if (command === 'systemctl status nginx') {
-    pushTerminal('output', 'nginx.service active (running)')
-    return
+  if (command === "systemctl status nginx") {
+    pushTerminal("output", "nginx.service active (running)");
+    return;
   }
 
-  pushTerminal('output', `Executed in sandbox: ${command}`)
+  pushTerminal("output", `Executed in sandbox: ${command}`);
 }
 
 function submitTerminal() {
-  const cmd = state.terminalInput.trim()
-  if (!cmd) return
-  runTerminal(cmd)
-  state.terminalInput = ''
+  const cmd = state.terminalInput.trim();
+  if (!cmd) return;
+  runTerminal(cmd);
+  state.terminalInput = "";
 }
 
 function logLevelFromRandom() {
-  const levels = ['INFO', 'WARN', 'ERROR', 'DEBUG', 'OK']
-  return levels[Math.floor(Math.random() * levels.length)]
+  const levels = ["INFO", "WARN", "ERROR", "DEBUG", "OK"];
+  return levels[Math.floor(Math.random() * levels.length)];
 }
 
 function addLog(message, level) {
@@ -419,58 +593,59 @@ function addLog(message, level) {
     ts: new Date().toLocaleTimeString(),
     level,
     message,
-  })
+  });
 
   if (state.logs.length > 300) {
-    state.logs = state.logs.slice(0, 300)
+    state.logs = state.logs.slice(0, 300);
   }
 }
 
 function seedLogs() {
   for (let i = 0; i < 18; i += 1) {
-    const server = state.servers[i % state.servers.length]
-    const msg = logSamples[i % logSamples.length]
-    const level = logLevelFromRandom()
-    addLog(`${server.name}: ${msg}`, level)
+    const server = state.servers[i % state.servers.length];
+    const msg = logSamples[i % logSamples.length];
+    const level = logLevelFromRandom();
+    addLog(`${server.name}: ${msg}`, level);
   }
 }
 
 function pingAll() {
   state.servers = state.servers.map((server) => {
-    const roll = Math.random()
-    let status = 'online'
-    if (roll > 0.9) status = 'offline'
-    else if (roll > 0.78) status = 'unknown'
-    return { ...server, status }
-  })
-  showToast('Ping completed across all demo servers')
+    const roll = Math.random();
+    let status = "online";
+    if (roll > 0.9) status = "offline";
+    else if (roll > 0.78) status = "unknown";
+    return { ...server, status };
+  });
+  showToast("Ping completed across all demo servers");
 }
 
 onMounted(() => {
-  seedLogs()
+  seedLogs();
 
   timerHandle = setInterval(() => {
-    state.resetInSeconds -= 1
+    state.resetInSeconds -= 1;
     if (state.resetInSeconds <= 0) {
-      state.resetInSeconds = resetStart
-      state.servers = structuredClone(seedServers)
-      state.logs = []
-      seedLogs()
-      showToast('Demo sandbox reset complete')
+      state.resetInSeconds = resetStart;
+      state.servers = structuredClone(seedServers);
+      state.logs = [];
+      seedLogs();
+      showToast("Demo sandbox reset complete");
     }
-  }, 1000)
+  }, 1000);
 
   logTailHandle = setInterval(() => {
-    const server = state.servers[Math.floor(Math.random() * state.servers.length)]
-    const msg = logSamples[Math.floor(Math.random() * logSamples.length)]
-    addLog(`${server.name}: ${msg}`, logLevelFromRandom())
-  }, 3000)
-})
+    const server =
+      state.servers[Math.floor(Math.random() * state.servers.length)];
+    const msg = logSamples[Math.floor(Math.random() * logSamples.length)];
+    addLog(`${server.name}: ${msg}`, logLevelFromRandom());
+  }, 3000);
+});
 
 onBeforeUnmount(() => {
-  clearInterval(timerHandle)
-  clearInterval(logTailHandle)
-})
+  clearInterval(timerHandle);
+  clearInterval(logTailHandle);
+});
 </script>
 
 <style scoped>

@@ -39,16 +39,20 @@
 
         <p class="subheadline">
           SSH access <span class="sep">·</span> deploy pipelines
-          <span class="sep">·</span> live logs
-          <span class="sep">·</span> zero vendor lock-in
+          <span class="sep">·</span> live logs <span class="sep">·</span> zero
+          vendor lock-in
         </p>
 
         <div class="cta-row">
           <span class="cta-primary-wrap">
-            <RouterLink class="btn-primary" to="/demo">Try Live Demo</RouterLink>
+            <RouterLink class="btn-primary" to="/demo"
+              >Try Live Demo</RouterLink
+            >
             <span class="cta-meta">no login required</span>
           </span>
-          <RouterLink class="btn-secondary" to="/login">Self-host Free</RouterLink>
+          <RouterLink class="btn-secondary" to="/login"
+            >Self-host Free</RouterLink
+          >
           <a
             class="btn-ghost"
             href="https://github.com/mrl-barua/SERVCTL-FRONT"
@@ -69,19 +73,27 @@
       <div class="container feature-grid">
         <article class="feature-card">
           <h3 class="feature-title">SSH Access</h3>
-          <p class="feature-desc">Launch terminal sessions directly from the dashboard.</p>
+          <p class="feature-desc">
+            Launch terminal sessions directly from the dashboard.
+          </p>
         </article>
         <article class="feature-card">
           <h3 class="feature-title">Deploy Pipelines</h3>
-          <p class="feature-desc">Run deployments with real-time progress visibility.</p>
+          <p class="feature-desc">
+            Run deployments with real-time progress visibility.
+          </p>
         </article>
         <article class="feature-card">
           <h3 class="feature-title">Live Log Streaming</h3>
-          <p class="feature-desc">Tail logs from any server and filter by signal.</p>
+          <p class="feature-desc">
+            Tail logs from any server and filter by signal.
+          </p>
         </article>
         <article class="feature-card">
           <h3 class="feature-title">Multi-environment</h3>
-          <p class="feature-desc">Organize servers by production, live, QA, and testing.</p>
+          <p class="feature-desc">
+            Organize servers by production, live, QA, and testing.
+          </p>
         </article>
       </div>
     </section>
@@ -99,24 +111,31 @@
       <div class="container">
         <h2 class="self-title">Self-host in minutes.</h2>
         <p class="self-sub">One command. Your infrastructure, your rules.</p>
-        <pre class="install-code">git clone https://github.com/mrl-barua/SERVCTL-FRONT.git
+        <pre class="install-code">
+git clone https://github.com/mrl-barua/SERVCTL-FRONT.git
 cd SERVCTL-FRONT
 npm install
-npm run dev</pre>
+npm run dev</pre
+        >
       </div>
     </section>
 
     <footer class="footer" id="changelog">
       <div class="container footer-inner">
         <div>SERVCTL 2025 · MIT License</div>
-        <a href="https://github.com/mrl-barua/SERVCTL-FRONT" target="_blank" rel="noreferrer">GitHub</a>
+        <a
+          href="https://github.com/mrl-barua/SERVCTL-FRONT"
+          target="_blank"
+          rel="noreferrer"
+          >GitHub</a
+        >
       </div>
     </footer>
   </div>
 </template>
 
 <script setup>
-import { RouterLink } from 'vue-router'
+import { RouterLink } from "vue-router";
 </script>
 
 <style scoped>
@@ -137,7 +156,12 @@ import { RouterLink } from 'vue-router'
 
 .landing {
   min-height: 100vh;
-  background: radial-gradient(ellipse 90% 60% at 50% -10%, rgba(79, 142, 247, 0.09) 0%, transparent 70%),
+  background:
+    radial-gradient(
+      ellipse 90% 60% at 50% -10%,
+      rgba(79, 142, 247, 0.09) 0%,
+      transparent 70%
+    ),
     var(--bg);
   color: var(--text);
 }
