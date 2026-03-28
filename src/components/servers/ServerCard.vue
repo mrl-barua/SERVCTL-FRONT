@@ -30,14 +30,27 @@
       <button class="card-btn" @click="handleCopySSH">copy cmd</button>
       <button v-if="server.deploy" class="card-btn deploy" @click="handleDeploy">↑ deploy</button>
       <button class="card-btn logs" @click="handleLogs">≡ logs</button>
+      <button class="card-btn edit" @click="openEditModal">✎ edit</button>
+      <button class="card-btn danger" @click="handleDelete">✕ delete</button>
     </div>
+
+    <AddServerModal
+      v-if="showEditModal"
+      mode="edit"
+      :initial-server="server"
+      @close="closeEditModal"
+      @update="handleUpdateServer"
+    />
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSSH } from '../../composables/useSSH'
+import { useServersStore } from '../../stores/servers'
 import { useToastStore } from '../../stores/toast'
+import AddServerModal from './AddServerModal.vue'
 
 const props = defineProps({
   server: {
@@ -48,7 +61,9 @@ const props = defineProps({
 
 const router = useRouter()
 const { copySSHCommand } = useSSH()
+const serversStore = useServersStore()
 const toastStore = useToastStore()
+const showEditModal = ref(false)
 
 const envLabels = {
   prod: 'Production',
@@ -79,6 +94,38 @@ function handleDeploy() {
 
 function handleLogs() {
   router.push({ name: 'logs', query: { serverId: props.server.id } })
+}
+
+function openEditModal() {
+  showEditModal.value = true
+}
+
+function closeEditModal() {
+  showEditModal.value = false
+}
+
+async function handleUpdateServer(serverData) {
+  try {
+    await serversStore.updateServer(props.server.id, serverData)
+    closeEditModal()
+    toastStore.showToast(`Server "${props.server.name}" updated`, 'success')
+  } catch (error) {
+    const message = error?.response?.data?.message || 'Failed to update server'
+    toastStore.showToast(Array.isArray(message) ? message.join(', ') : message, 'error')
+  }
+}
+
+async function handleDelete() {
+  const confirmed = window.confirm(`Delete server "${props.server.name}"?`)
+  if (!confirmed) return
+
+  try {
+    await serversStore.removeServer(props.server.id)
+    toastStore.showToast(`Server "${props.server.name}" deleted`, 'success')
+  } catch (error) {
+    const message = error?.response?.data?.message || 'Failed to delete server'
+    toastStore.showToast(Array.isArray(message) ? message.join(', ') : message, 'error')
+  }
 }
 </script>
 
@@ -312,6 +359,24 @@ function handleLogs() {
 
 .card-btn.logs:hover {
   background: var(--yellow-bg);
+}
+
+.card-btn.edit {
+  border-color: var(--accent2);
+  color: var(--accent);
+}
+
+.card-btn.edit:hover {
+  background: #0d1a2b;
+}
+
+.card-btn.danger {
+  border-color: #5d1f1f;
+  color: var(--red);
+}
+
+.card-btn.danger:hover {
+  background: var(--red-bg);
 }
 
 .uptime-bar {

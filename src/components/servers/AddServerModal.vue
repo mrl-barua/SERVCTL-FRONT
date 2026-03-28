@@ -1,297 +1,306 @@
 <template>
-  <div class="modal-overlay" @click="handleBackdropClick">
-    <div class="modal">
-      <header class="modal-header">
-        <h2>{{ mode === "edit" ? "Edit Server" : "Add Server" }}</h2>
-        <button class="x-btn" @click="emit('close')">x</button>
-      </header>
+  <Teleport to="body">
+    <div class="modal-overlay" @click="handleBackdropClick">
+      <div class="modal">
+        <header class="modal-header">
+          <h2>{{ isEdit ? "Edit Server" : "Add Server" }}</h2>
+          <button class="x-btn" @click="emit('close')">x</button>
+        </header>
 
-      <section class="section">
-        <h3>Step 1 - Basic Info</h3>
-        <div class="grid-2">
-          <label>
-            Server name
-            <input v-model="form.name" placeholder="web-prod-01" />
-          </label>
-          <label>
-            Host / IP
-            <input
-              v-model="form.host"
-              placeholder="10.0.1.10"
-              @blur="checkNetworkWarning"
-              @input="queueNetworkWarning"
-            />
-          </label>
-        </div>
-
-        <div
-          v-if="networkWarning"
-          :class="['warning-box', networkWarning.level]"
-        >
-          <p class="warning-title">
-            {{ networkWarning.level === "error" ? "X" : "i" }}
-            {{ networkWarning.title }}
-          </p>
-          <p>{{ networkWarning.message }}</p>
-          <p>{{ networkWarning.suggestion }}</p>
-          <RouterLink
-            v-if="networkWarning.showInstallGuide"
-            class="warning-link"
-            to="/install"
-          >
-            Self-host Guide
-          </RouterLink>
-        </div>
-
-        <div class="grid-3">
-          <label>
-            Port
-            <input v-model.number="form.port" type="number" placeholder="22" />
-          </label>
-          <label>
-            Username
-            <input v-model="form.user" placeholder="ubuntu" />
-          </label>
-          <label>
-            Environment
-            <select v-model="form.env">
-              <option value="prod">prod</option>
-              <option value="live">live</option>
-              <option value="qa">qa</option>
-              <option value="test">test</option>
-            </select>
-          </label>
-        </div>
-
-        <label>
-          Notes / role
-          <input v-model="form.notes" placeholder="api, nginx, database" />
-        </label>
-      </section>
-
-      <section class="section">
-        <h3>Step 2 - Authentication Method</h3>
-        <div class="tabs">
-          <button
-            v-for="tab in authTabs"
-            :key="tab.value"
-            :disabled="tab.disabled"
-            :title="tab.tooltip"
-            :class="[
-              'tab-btn',
-              { active: form.authMethod === tab.value, disabled: tab.disabled },
-            ]"
-            @click="selectTab(tab.value)"
-          >
-            {{ tab.label }}
-          </button>
-        </div>
-
-        <div v-if="form.authMethod === 'password'" class="auth-panel">
-          <label>
-            Password
-            <div class="input-with-btn">
+        <section class="section">
+          <h3>Step 1 - Basic Info</h3>
+          <div class="grid-2">
+            <label>
+              Server name
+              <input v-model="form.name" placeholder="web-prod-01" />
+            </label>
+            <label>
+              Host / IP
               <input
-                v-model="form.password"
-                :type="showPassword ? 'text' : 'password'"
-                placeholder="Enter SSH password"
+                v-model="form.host"
+                placeholder="10.0.1.10"
+                @blur="checkNetworkWarning"
+                @input="queueNetworkWarning"
               />
-              <button class="tiny-btn" @click="showPassword = !showPassword">
-                {{ showPassword ? "Hide" : "Show" }}
+            </label>
+          </div>
+
+          <div
+            v-if="networkWarning"
+            :class="['warning-box', networkWarning.level]"
+          >
+            <p class="warning-title">
+              {{ networkWarning.level === "error" ? "X" : "i" }}
+              {{ networkWarning.title }}
+            </p>
+            <p>{{ networkWarning.message }}</p>
+            <p>{{ networkWarning.suggestion }}</p>
+            <RouterLink
+              v-if="networkWarning.showInstallGuide"
+              class="warning-link"
+              to="/install"
+            >
+              Self-host Guide
+            </RouterLink>
+          </div>
+
+          <div class="grid-3">
+            <label>
+              Port
+              <input
+                v-model.number="form.port"
+                type="number"
+                placeholder="22"
+              />
+            </label>
+            <label>
+              Username
+              <input v-model="form.user" placeholder="ubuntu" />
+            </label>
+            <label>
+              Environment
+              <select v-model="form.env">
+                <option value="prod">prod</option>
+                <option value="live">live</option>
+                <option value="qa">qa</option>
+                <option value="test">test</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            Notes / role
+            <input v-model="form.notes" placeholder="api, nginx, database" />
+          </label>
+        </section>
+
+        <section class="section">
+          <h3>Step 2 - Authentication Method</h3>
+          <div class="tabs">
+            <button
+              v-for="tab in authTabs"
+              :key="tab.value"
+              :disabled="tab.disabled"
+              :title="tab.tooltip"
+              :class="[
+                'tab-btn',
+                {
+                  active: form.authMethod === tab.value,
+                  disabled: tab.disabled,
+                },
+              ]"
+              @click="selectTab(tab.value)"
+            >
+              {{ tab.label }}
+            </button>
+          </div>
+
+          <div v-if="form.authMethod === 'password'" class="auth-panel">
+            <label>
+              Password
+              <div class="input-with-btn">
+                <input
+                  v-model="form.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  placeholder="Enter SSH password"
+                />
+                <button class="tiny-btn" @click="showPassword = !showPassword">
+                  {{ showPassword ? "Hide" : "Show" }}
+                </button>
+              </div>
+            </label>
+            <p class="pill">
+              Passwords are encrypted with AES-256 before storage.
+            </p>
+          </div>
+
+          <div v-else-if="form.authMethod === 'key-stored'" class="auth-panel">
+            <label>
+              Key name
+              <input v-model="form.sshKeyLabel" placeholder="prod-key" />
+            </label>
+            <label>
+              Paste private key (PEM format)
+              <textarea
+                v-model="form.sshKey"
+                class="key-textarea"
+                placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
+                rows="8"
+              />
+            </label>
+            <label>
+              Passphrase (optional)
+              <div class="input-with-btn">
+                <input
+                  v-model="form.passphrase"
+                  :type="showPassphrase ? 'text' : 'password'"
+                  placeholder="optional"
+                />
+                <button
+                  class="tiny-btn"
+                  @click="showPassphrase = !showPassphrase"
+                >
+                  {{ showPassphrase ? "Hide" : "Show" }}
+                </button>
+              </div>
+            </label>
+            <label class="checkbox-row">
+              <input v-model="saveToVault" type="checkbox" /> Save to Key Vault
+              for reuse
+            </label>
+            <p class="pill">
+              Key is encrypted before storage. We never transmit your private
+              key to third parties.
+            </p>
+          </div>
+
+          <div v-else-if="form.authMethod === 'key-path'" class="auth-panel">
+            <p v-if="isCloudMode" class="pill warning">
+              Key file paths are only available in local mode. Install SERVCTL
+              locally to use this option.
+            </p>
+            <template v-else>
+              <label>
+                Key label
+                <input v-model="form.sshKeyLabel" placeholder="id_rsa" />
+              </label>
+              <label>
+                Key path
+                <input
+                  v-model="form.sshKeyPath"
+                  :placeholder="keyPathPlaceholder"
+                />
+              </label>
+              <p class="help">
+                Enter the absolute path to your private key on this machine. The
+                file must be readable by the SERVCTL backend process.
+              </p>
+              <div class="verify-row">
+                <button class="tiny-btn" @click="verifyKeyPath">
+                  Verify Path
+                </button>
+                <span
+                  v-if="keyPathStatus"
+                  :class="['verify-status', keyPathStatus.ok ? 'ok' : 'bad']"
+                >
+                  {{
+                    keyPathStatus.ok
+                      ? "Key file found and readable"
+                      : "File not found or not readable"
+                  }}
+                </span>
+              </div>
+            </template>
+          </div>
+
+          <div v-else class="auth-panel">
+            <div class="vault-header">
+              <label>
+                Select saved key
+                <select v-model="form.vaultKeyId">
+                  <option disabled value="">Select a key</option>
+                  <option
+                    v-for="item in keyVaultList"
+                    :key="item.id"
+                    :value="item.id"
+                  >
+                    {{ item.label }} ({{ truncate(item.fingerprint) }})
+                  </option>
+                </select>
+              </label>
+              <button class="tiny-btn" @click="openVaultUpload">
+                + Upload New Key
               </button>
             </div>
-          </label>
-          <p class="pill">
-            Passwords are encrypted with AES-256 before storage.
-          </p>
-        </div>
 
-        <div v-else-if="form.authMethod === 'key-stored'" class="auth-panel">
+            <p v-if="keyVaultList.length === 0" class="help">
+              No saved keys yet. Use the SSH Key tab to upload and save your
+              first key.
+            </p>
+          </div>
+        </section>
+
+        <section class="section">
+          <button class="collapse-btn" @click="showAdvanced = !showAdvanced">
+            Step 4 - Advanced {{ showAdvanced ? "[-]" : "[+]" }}
+          </button>
+
+          <div v-if="showAdvanced" class="advanced-panel">
+            <label>
+              Log type
+              <select v-model="form.logType">
+                <option value="file">file</option>
+                <option value="journalctl">journalctl</option>
+                <option value="docker">docker</option>
+              </select>
+            </label>
+
+            <label v-if="form.logType === 'file'">
+              Log path
+              <input v-model="form.logPath" placeholder="/var/log/app.log" />
+            </label>
+
+            <label v-if="form.logType === 'docker'">
+              Docker container name
+              <input v-model="form.dockerName" placeholder="app-container" />
+            </label>
+
+            <label>
+              Deploy script command
+              <textarea
+                v-model="form.deploy"
+                rows="3"
+                placeholder="git pull && npm ci && npm run build"
+              />
+            </label>
+          </div>
+        </section>
+
+        <footer class="modal-actions">
+          <button class="btn" @click="emit('close')">Cancel</button>
+          <button class="btn primary" @click="handleSubmit">
+            {{ isEdit ? "Update Server" : "Add Server" }}
+          </button>
+        </footer>
+      </div>
+
+      <div
+        v-if="showVaultUpload"
+        class="modal-overlay nested"
+        @click.self="closeVaultUpload"
+      >
+        <div class="modal sub-modal">
+          <h3>Upload Key to Vault</h3>
           <label>
-            Key name
-            <input v-model="form.sshKeyLabel" placeholder="prod-key" />
+            Label
+            <input v-model="vaultUpload.label" placeholder="my-prod-key" />
           </label>
           <label>
-            Paste private key (PEM format)
+            Private key
             <textarea
-              v-model="form.sshKey"
-              class="key-textarea"
+              v-model="vaultUpload.privateKey"
+              rows="7"
               placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
-              rows="8"
             />
           </label>
           <label>
             Passphrase (optional)
-            <div class="input-with-btn">
-              <input
-                v-model="form.passphrase"
-                :type="showPassphrase ? 'text' : 'password'"
-                placeholder="optional"
-              />
-              <button
-                class="tiny-btn"
-                @click="showPassphrase = !showPassphrase"
-              >
-                {{ showPassphrase ? "Hide" : "Show" }}
-              </button>
-            </div>
-          </label>
-          <label class="checkbox-row">
-            <input v-model="saveToVault" type="checkbox" /> Save to Key Vault
-            for reuse
-          </label>
-          <p class="pill">
-            Key is encrypted before storage. We never transmit your private key
-            to third parties.
-          </p>
-        </div>
-
-        <div v-else-if="form.authMethod === 'key-path'" class="auth-panel">
-          <p v-if="isCloudMode" class="pill warning">
-            Key file paths are only available in local mode. Install SERVCTL
-            locally to use this option.
-          </p>
-          <template v-else>
-            <label>
-              Key label
-              <input v-model="form.sshKeyLabel" placeholder="id_rsa" />
-            </label>
-            <label>
-              Key path
-              <input
-                v-model="form.sshKeyPath"
-                :placeholder="keyPathPlaceholder"
-              />
-            </label>
-            <p class="help">
-              Enter the absolute path to your private key on this machine. The
-              file must be readable by the SERVCTL backend process.
-            </p>
-            <div class="verify-row">
-              <button class="tiny-btn" @click="verifyKeyPath">
-                Verify Path
-              </button>
-              <span
-                v-if="keyPathStatus"
-                :class="['verify-status', keyPathStatus.ok ? 'ok' : 'bad']"
-              >
-                {{
-                  keyPathStatus.ok
-                    ? "Key file found and readable"
-                    : "File not found or not readable"
-                }}
-              </span>
-            </div>
-          </template>
-        </div>
-
-        <div v-else class="auth-panel">
-          <div class="vault-header">
-            <label>
-              Select saved key
-              <select v-model="form.vaultKeyId">
-                <option disabled value="">Select a key</option>
-                <option
-                  v-for="item in keyVaultList"
-                  :key="item.id"
-                  :value="item.id"
-                >
-                  {{ item.label }} ({{ truncate(item.fingerprint) }})
-                </option>
-              </select>
-            </label>
-            <button class="tiny-btn" @click="openVaultUpload">
-              + Upload New Key
-            </button>
-          </div>
-
-          <p v-if="keyVaultList.length === 0" class="help">
-            No saved keys yet. Use the SSH Key tab to upload and save your first
-            key.
-          </p>
-        </div>
-      </section>
-
-      <section class="section">
-        <button class="collapse-btn" @click="showAdvanced = !showAdvanced">
-          Step 4 - Advanced {{ showAdvanced ? "[-]" : "[+]" }}
-        </button>
-
-        <div v-if="showAdvanced" class="advanced-panel">
-          <label>
-            Log type
-            <select v-model="form.logType">
-              <option value="file">file</option>
-              <option value="journalctl">journalctl</option>
-              <option value="docker">docker</option>
-            </select>
-          </label>
-
-          <label v-if="form.logType === 'file'">
-            Log path
-            <input v-model="form.logPath" placeholder="/var/log/app.log" />
-          </label>
-
-          <label v-if="form.logType === 'docker'">
-            Docker container name
-            <input v-model="form.dockerName" placeholder="app-container" />
-          </label>
-
-          <label>
-            Deploy script command
-            <textarea
-              v-model="form.deploy"
-              rows="3"
-              placeholder="git pull && npm ci && npm run build"
+            <input
+              v-model="vaultUpload.passphrase"
+              type="password"
+              placeholder="optional"
             />
           </label>
-        </div>
-      </section>
-
-      <footer class="modal-actions">
-        <button class="btn" @click="emit('close')">Cancel</button>
-        <button class="btn primary" @click="handleSubmit">
-          {{ mode === "edit" ? "Update Server" : "Add Server" }}
-        </button>
-      </footer>
-    </div>
-
-    <div
-      v-if="showVaultUpload"
-      class="modal-overlay nested"
-      @click.self="closeVaultUpload"
-    >
-      <div class="modal sub-modal">
-        <h3>Upload Key to Vault</h3>
-        <label>
-          Label
-          <input v-model="vaultUpload.label" placeholder="my-prod-key" />
-        </label>
-        <label>
-          Private key
-          <textarea
-            v-model="vaultUpload.privateKey"
-            rows="7"
-            placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
-          />
-        </label>
-        <label>
-          Passphrase (optional)
-          <input
-            v-model="vaultUpload.passphrase"
-            type="password"
-            placeholder="optional"
-          />
-        </label>
-        <div class="modal-actions">
-          <button class="btn" @click="closeVaultUpload">Cancel</button>
-          <button class="btn primary" @click="uploadVaultKey">
-            Upload & Save
-          </button>
+          <div class="modal-actions">
+            <button class="btn" @click="closeVaultUpload">Cancel</button>
+            <button class="btn primary" @click="uploadVaultKey">
+              Upload & Save
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -301,12 +310,22 @@ import apiClient from "../../services/http";
 import { useAppStore } from "../../stores/app";
 import { useToastStore } from "../../stores/toast";
 
-const emit = defineEmits(["close", "add"]);
+const props = defineProps({
+  mode: {
+    type: String,
+    default: "create",
+  },
+  initialServer: {
+    type: Object,
+    default: null,
+  },
+});
+
+const emit = defineEmits(["close", "add", "update"]);
 
 const appStore = useAppStore();
 const toastStore = useToastStore();
 
-const mode = ref("create");
 const showPassword = ref(false);
 const showPassphrase = ref(false);
 const showAdvanced = ref(false);
@@ -316,6 +335,7 @@ const showVaultUpload = ref(false);
 const networkWarning = ref(null);
 const keyPathStatus = ref(null);
 let networkTimer = null;
+const isEdit = computed(() => props.mode === "edit");
 
 const form = reactive({
   name: "",
@@ -506,7 +526,7 @@ async function handleSubmit() {
   try {
     await ensureVaultSaveFromPaste();
 
-    emit("add", {
+    const payload = {
       name: form.name.trim(),
       host: form.host.trim(),
       port: Number(form.port) || 22,
@@ -517,14 +537,29 @@ async function handleSubmit() {
       logPath: form.logPath.trim() || undefined,
       logType: form.logType,
       dockerName: form.dockerName.trim() || undefined,
-      authMethod: form.authMethod,
-      password: form.authMethod === "password" ? form.password : undefined,
-      sshKey: form.authMethod === "key-stored" ? form.sshKey : undefined,
-      sshKeyLabel: form.sshKeyLabel.trim() || undefined,
-      sshKeyPath:
-        form.authMethod === "key-path" ? form.sshKeyPath.trim() : undefined,
-      vaultKeyId: form.authMethod === "key-vault" ? form.vaultKeyId : undefined,
-    });
+    };
+
+    const initialAuthMethod = props.initialServer?.authMethod || "password";
+    const authChanged = !isEdit.value || form.authMethod !== initialAuthMethod;
+
+    if (authChanged) {
+      payload.authMethod = form.authMethod;
+      payload.password =
+        form.authMethod === "password" ? form.password : undefined;
+      payload.sshKey =
+        form.authMethod === "key-stored" ? form.sshKey : undefined;
+      payload.sshKeyLabel = form.sshKeyLabel.trim() || undefined;
+      payload.sshKeyPath =
+        form.authMethod === "key-path" ? form.sshKeyPath.trim() : undefined;
+      payload.vaultKeyId =
+        form.authMethod === "key-vault" ? form.vaultKeyId : undefined;
+    }
+
+    if (isEdit.value) {
+      emit("update", payload);
+    } else {
+      emit("add", payload);
+    }
 
     emit("close");
   } catch (error) {
@@ -538,6 +573,21 @@ async function handleSubmit() {
 }
 
 onMounted(async () => {
+  if (isEdit.value && props.initialServer) {
+    form.name = props.initialServer.name || "";
+    form.host = props.initialServer.host || "";
+    form.port = Number(props.initialServer.port) || 22;
+    form.user = props.initialServer.user || "ubuntu";
+    form.env = props.initialServer.env || "prod";
+    form.notes = props.initialServer.notes || "";
+    form.deploy = props.initialServer.deploy || "";
+    form.logPath = props.initialServer.logPath || "";
+    form.logType = props.initialServer.logType || "file";
+    form.dockerName = props.initialServer.dockerName || "";
+    form.authMethod = props.initialServer.authMethod || "password";
+    form.sshKeyLabel = props.initialServer.sshKeyLabel || "";
+  }
+
   await fetchKeyVault();
 });
 </script>
