@@ -1,21 +1,29 @@
 <template>
-  <div class="layout">
-    <AppSidebar />
-    <div class="main">
-      <AppTopbar />
-      <div class="content">
-        <RouterView />
+  <div>
+    <div v-if="showDashboardLayout" class="layout">
+      <AppSidebar />
+      <div class="main">
+        <AppTopbar />
+        <div class="content">
+          <RouterView />
+        </div>
       </div>
     </div>
+    <RouterView v-else />
     <AppToast />
   </div>
 </template>
 
 <script setup>
-import { RouterView } from 'vue-router'
+import { computed } from 'vue'
+import { RouterView, useRoute } from 'vue-router'
 import AppSidebar from './components/layout/AppSidebar.vue'
 import AppTopbar from './components/layout/AppTopbar.vue'
 import AppToast from './components/AppToast.vue'
+
+const route = useRoute()
+
+const showDashboardLayout = computed(() => Boolean(route.meta.requiresAuth))
 </script>
 
 <style scoped>

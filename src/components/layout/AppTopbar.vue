@@ -4,6 +4,7 @@
     <div class="topbar-actions">
       <button class="tb-btn" @click="handlePingAll">ping all</button>
       <button class="tb-btn primary" @click="openAddModal">+ add server</button>
+      <button class="tb-btn" @click="handleLogout">logout</button>
     </div>
 
     <AddServerModal v-if="showModal" @close="closeAddModal" @add="handleAddServer" />
@@ -12,13 +13,16 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useServersStore } from '../../stores/servers'
+import { useAuthStore } from '../../stores/auth'
 import { useToastStore } from '../../stores/toast'
 import AddServerModal from '../servers/AddServerModal.vue'
 
 const route = useRoute()
+const router = useRouter()
 const serversStore = useServersStore()
+const authStore = useAuthStore()
 const toastStore = useToastStore()
 
 const showModal = ref(false)
@@ -35,9 +39,13 @@ const routeTitle = computed(() => {
   return routeTitles[name] || 'Overview'
 })
 
-function handlePingAll() {
-  serversStore.pingAll()
-  toastStore.showToast('Pinging all servers...', 'success')
+async function handlePingAll() {
+  try {
+    await serversStore.pingAll()
+    toastStore.showToast('Status updates completed', 'success')
+  } catch {
+    toastStore.showToast('Failed to update server status', 'error')
+  }
 }
 
 function openAddModal() {
@@ -48,10 +56,20 @@ function closeAddModal() {
   showModal.value = false
 }
 
-function handleAddServer(serverData) {
-  serversStore.addServer(serverData)
-  closeAddModal()
-  toastStore.showToast(`Server "${serverData.name}" added!`, 'success')
+async function handleAddServer(serverData) {
+  try {
+    await serversStore.addServer(serverData)
+    closeAddModal()
+    toastStore.showToast(`Server "${serverData.name}" added`, 'success')
+  } catch (error) {
+    const message = error?.response?.data?.message || 'Failed to add server'
+    toastStore.showToast(Array.isArray(message) ? message.join(', ') : message, 'error')
+  }
+}
+
+function handleLogout() {
+  authStore.logout()
+  router.push({ name: 'login' })
 }
 </script>
 

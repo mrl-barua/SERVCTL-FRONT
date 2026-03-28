@@ -71,11 +71,10 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import { useServersStore } from '../../stores/servers'
-import { useRoute } from 'vue-router'
 
 const serversStore = useServersStore()
-const route = useRoute()
 
 const envOrder = ['prod', 'live', 'qa', 'test']
 const envLabels = {
@@ -84,6 +83,12 @@ const envLabels = {
   qa: 'QA',
   test: 'Testing',
 }
+
+onMounted(async () => {
+  if (serversStore.servers.length === 0) {
+    await serversStore.fetchServers()
+  }
+})
 </script>
 
 <style scoped>

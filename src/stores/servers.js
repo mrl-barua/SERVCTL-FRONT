@@ -1,20 +1,32 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import apiClient from '../services/http'
+import { useAuthStore } from './auth'
 
 export const useServersStore = defineStore('servers', () => {
-  const servers = ref([
-    { id: 1, name: 'web-prod-01', host: '10.0.1.10', user: 'ubuntu', port: 22, env: 'prod', notes: 'nginx + app server', deploy: './deploy.sh production', logpath: '/var/log/nginx/access.log', status: 'online', uptime: 99.8 },
-    { id: 2, name: 'db-prod-01', host: '10.0.1.11', user: 'ubuntu', port: 22, env: 'prod', notes: 'PostgreSQL primary', deploy: '', logpath: '/var/log/postgresql/postgresql.log', status: 'online', uptime: 99.9 },
-    { id: 3, name: 'web-live-01', host: '10.0.2.10', user: 'ubuntu', port: 22, env: 'live', notes: 'live traffic mirror', deploy: './deploy.sh live', logpath: '/var/log/nginx/access.log', status: 'online', uptime: 97.2 },
-    { id: 4, name: 'web-qa-01', host: '10.0.3.10', user: 'deploy', port: 22, env: 'qa', notes: 'QA environment', deploy: './deploy.sh qa', logpath: '/var/log/app/app.log', status: 'online', uptime: 94.1 },
-    { id: 5, name: 'api-qa-01', host: '10.0.3.11', user: 'deploy', port: 22, env: 'qa', notes: 'API service', deploy: './deploy.sh api-qa', logpath: '/var/log/app/api.log', status: 'unknown', uptime: 87.5 },
-    { id: 6, name: 'dev-test-01', host: '10.0.4.10', user: 'dev', port: 2222, env: 'test', notes: 'dev sandbox', deploy: 'make deploy', logpath: '/var/log/app/dev.log', status: 'online', uptime: 78.0 },
-    { id: 7, name: 'load-test-01', host: '10.0.4.11', user: 'dev', port: 22, env: 'test', notes: 'k6 load testing', deploy: './run-k6.sh', logpath: '/var/log/k6/output.log', status: 'offline', uptime: 0 },
-  ])
+  const authStore = useAuthStore()
+  const servers = ref([])
 
   const loading = ref(false)
   const error = ref(null)
-  let nextId = 20
+  const meta = ref({
+    page: 1,
+    limit: 50,
+    total: 0,
+    totalPages: 1,
+  })
+
+  async function withAuthRetry(operation) {
+    try {
+      return await operation()
+    } catch (err) {
+      if (err?.response?.status === 401) {
+        await authStore.refreshSession()
+        return operation()
+      }
+      throw err
+    }
+  }
 
   const totalServers = computed(() => servers.value.length)
   const onlineServers = computed(() => servers.value.filter(s => s.status === 'online').length)
@@ -34,50 +46,83 @@ export const useServersStore = defineStore('servers', () => {
     return servers.value.find(s => s.id === id)
   }
 
-  function addServer(dto) {
-    const newServer = {
-      id: nextId++,
-      ...dto,
-      status: 'unknown',
-      uptime: 0,
-    }
-    servers.value.push(newServer)
-    return newServer
+  async function addServer(dto) {
+    const { data } = await withAuthRetry(() => apiClient.post('/servers', dto))
+    servers.value.unshift(data)
+    meta.value.total += 1
+    return data
   }
 
-  function removeServer(id) {
+  async function removeServer(id) {
+    await withAuthRetry(() => apiClient.delete(`/servers/${id}`))
     const index = servers.value.findIndex(s => s.id === id)
     if (index > -1) {
       servers.value.splice(index, 1)
+      meta.value.total = Math.max(0, meta.value.total - 1)
     }
   }
 
-  function updateServerStatus(id, status) {
+  async function updateServer(id, dto) {
+    const { data } = await withAuthRetry(() => apiClient.patch(`/servers/${id}`, dto))
+    const index = servers.value.findIndex(s => s.id === id)
+    if (index > -1) {
+      servers.value[index] = data
+    }
+    return data
+  }
+
+  async function updateServerStatus(id, status, uptime) {
+    const { data } = await withAuthRetry(() =>
+      apiClient.patch(`/servers/${id}/status`, {
+        status,
+        ...(uptime !== undefined ? { uptime } : {}),
+      }),
+    )
+
     const server = getServerById(id)
     if (server) {
-      server.status = status
+      server.status = data.status
+      server.uptime = data.uptime
+      server.updatedAt = data.updatedAt
     }
+
+    return data
   }
 
-  function pingAll() {
-    servers.value.forEach(s => {
-      if (s.status === 'unknown') {
-        s.status = Math.random() > 0.3 ? 'online' : 'offline'
-      }
+  async function pingAll() {
+    const updates = servers.value.map((server) => {
+      const nextStatus = server.status === 'online' ? 'online' : Math.random() > 0.25 ? 'online' : 'offline'
+      const nextUptime = nextStatus === 'online' ? Number((95 + Math.random() * 5).toFixed(1)) : 0
+      return updateServerStatus(server.id, nextStatus, nextUptime)
     })
+
+    await Promise.all(updates)
   }
 
-  async function fetchServers() {
+  async function fetchServers(params = {}) {
     loading.value = true
     error.value = null
     try {
-      // For now, just use mock data that's already loaded
-      // When API_MODE is enabled, this would call:
-      // const response = await axios.get('/servers')
-      // servers.value = response.data
+      const query = {
+        page: params.page ?? meta.value.page,
+        limit: params.limit ?? meta.value.limit,
+        ...(params.env ? { env: params.env } : {}),
+        ...(params.status ? { status: params.status } : {}),
+        ...(params.search ? { search: params.search } : {}),
+      }
+
+      const { data } = await withAuthRetry(() => apiClient.get('/servers', { params: query }))
+      servers.value = data.items
+      meta.value = {
+        page: data.page,
+        limit: data.limit,
+        total: data.total,
+        totalPages: data.totalPages,
+      }
       return servers.value
     } catch (err) {
-      error.value = err.message
+      error.value = err?.response?.data?.message || err.message
+      throw err
     } finally {
       loading.value = false
     }
@@ -85,6 +130,7 @@ export const useServersStore = defineStore('servers', () => {
 
   return {
     servers,
+    meta,
     loading,
     error,
     totalServers,
@@ -95,6 +141,7 @@ export const useServersStore = defineStore('servers', () => {
     getServerById,
     addServer,
     removeServer,
+    updateServer,
     updateServerStatus,
     pingAll,
     fetchServers,

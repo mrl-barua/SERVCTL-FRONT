@@ -12,11 +12,18 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import { useServersStore } from '../stores/servers'
 import StatCard from '../components/servers/StatCard.vue'
 import ServerGrid from '../components/servers/ServerGrid.vue'
 
 const serversStore = useServersStore()
+
+onMounted(async () => {
+  if (serversStore.servers.length === 0) {
+    await serversStore.fetchServers()
+  }
+})
 </script>
 
 <style scoped>
