@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LandingView from '../views/LandingView.vue'
+import DemoView from '../views/DemoView.vue'
 import OverviewView from '../views/OverviewView.vue'
 import TerminalView from '../views/TerminalView.vue'
 import DeployView from '../views/DeployView.vue'
@@ -12,6 +13,11 @@ const routes = [
     path: '/',
     name: 'landing',
     component: LandingView,
+  },
+  {
+    path: '/demo',
+    name: 'demo',
+    component: DemoView,
   },
   {
     path: '/overview',
