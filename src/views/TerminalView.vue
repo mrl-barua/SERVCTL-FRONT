@@ -149,6 +149,7 @@ function injectCmd(cmd) {
   const input = document.querySelector(".term-input");
   if (input) {
     input.value = cmd;
+    input.style.width = "100%";
     input.dispatchEvent(new Event("input", { bubbles: true }));
     input.focus();
   }
@@ -338,6 +339,74 @@ function dismissBanner() {
   color: var(--accent);
 }
 
+:deep(.terminal-panel) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+:deep(.term-input-row) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+:deep(.term-prompt-label) {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 40%;
+  min-width: 0;
+}
+
+:deep(.term-input) {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+  caret-color: var(--accent);
+  width: 100%;
+}
+
+:deep(.terminal-bar) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+:deep(.term-dots) {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+:deep(.term-title) {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 @media (max-width: 767px) {
   .quick-cmds-bar {
     flex-direction: column;
@@ -365,6 +434,35 @@ function dismissBanner() {
   :deep(.term-body) {
     min-height: 180px;
     max-height: 240px;
+  }
+
+  :deep(.term-prompt-label) {
+    max-width: 35%;
+    font-size: 11px;
+  }
+
+  :deep(.term-title) {
+    font-size: 10px;
+  }
+
+  :deep(.terminal-panel) {
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: var(--radius-lg);
+    position: relative;
+    left: 0;
+  }
+
+  :deep(.content) {
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  :deep(.view) {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
   }
 }
 </style>

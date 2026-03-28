@@ -31,6 +31,8 @@
 html,
 body {
   height: 100%;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 body {
@@ -186,4 +188,20 @@ a {
 
 #app {
   height: 100vh;
+}
+
+.layout {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+.main {
+  min-width: 0;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+.content {
+  min-width: 0;
+  overflow-x: hidden;
 }
