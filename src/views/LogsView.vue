@@ -3,5 +3,5 @@
 </template>
 
 <script setup>
-import LogViewer from '../components/logs/LogViewer.vue'
+import LogViewer from "../components/logs/LogViewer.vue";
 </script>
