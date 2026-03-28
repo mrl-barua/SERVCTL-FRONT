@@ -9,14 +9,23 @@
         <div class="confirm-title">{{ title }}</div>
         <div class="confirm-body">{{ message }}</div>
 
-        <div v-if="serverName" class="confirm-server-name">"{{ serverName }}"</div>
+        <div v-if="serverName" class="confirm-server-name">
+          "{{ serverName }}"
+        </div>
 
         <div class="confirm-actions">
-          <button class="confirm-btn cancel" @click="$emit('update:modelValue', false)">
+          <button
+            class="confirm-btn cancel"
+            @click="$emit('update:modelValue', false)"
+          >
             Cancel
           </button>
-          <button class="confirm-btn danger" :disabled="loading" @click="handleConfirm">
-            {{ loading ? 'Deleting...' : confirmLabel }}
+          <button
+            class="confirm-btn danger"
+            :disabled="loading"
+            @click="handleConfirm"
+          >
+            {{ loading ? "Deleting..." : confirmLabel }}
           </button>
         </div>
       </div>
@@ -27,17 +36,17 @@
 <script setup>
 defineProps({
   modelValue: Boolean,
-  title: { type: String, default: 'Are you sure?' },
-  message: { type: String, default: 'This action cannot be undone.' },
-  serverName: { type: String, default: '' },
-  confirmLabel: { type: String, default: 'Delete' },
+  title: { type: String, default: "Are you sure?" },
+  message: { type: String, default: "This action cannot be undone." },
+  serverName: { type: String, default: "" },
+  confirmLabel: { type: String, default: "Delete" },
   loading: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['update:modelValue', 'confirm']);
+const emit = defineEmits(["update:modelValue", "confirm"]);
 
 function handleConfirm() {
-  emit('confirm');
+  emit("confirm");
 }
 </script>
 

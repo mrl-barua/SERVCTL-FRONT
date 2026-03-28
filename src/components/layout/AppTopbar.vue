@@ -1,12 +1,18 @@
 <template>
   <div class="topbar">
-    <button v-if="isMobile" class="menu-toggle" @click="$emit('toggle-sidebar')">
+    <button
+      v-if="isMobile"
+      class="menu-toggle"
+      @click="$emit('toggle-sidebar')"
+    >
       ☰
     </button>
 
     <div class="topbar-title">{{ routeTitle }}</div>
     <div class="topbar-actions">
-      <button class="tb-btn ping-btn" @click="handlePingAll"><span>ping all</span></button>
+      <button class="tb-btn ping-btn" @click="handlePingAll">
+        <span>ping all</span>
+      </button>
       <button class="tb-btn primary" @click="openAddModal">+ add server</button>
       <button class="tb-btn" @click="handleLogout">logout</button>
     </div>

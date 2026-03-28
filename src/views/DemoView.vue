@@ -101,7 +101,11 @@
                 label="offline"
                 :value="counts.offline"
                 color="red"
-                :sub-label="counts.offline === 0 ? 'all clear' : `${counts.offline} need attention`"
+                :sub-label="
+                  counts.offline === 0
+                    ? 'all clear'
+                    : `${counts.offline} need attention`
+                "
                 :progress="counts.offline === 0 ? 100 : offlinePercent"
                 :progress-color="counts.offline === 0 ? 'green' : 'red'"
               />
@@ -109,7 +113,9 @@
                 label="unknown"
                 :value="counts.unknown"
                 color="yellow"
-                :sub-label="counts.unknown === 0 ? 'all resolved' : 'ping to resolve'"
+                :sub-label="
+                  counts.unknown === 0 ? 'all resolved' : 'ping to resolve'
+                "
                 :progress="unknownPercent"
               />
             </div>
@@ -431,7 +437,9 @@ const percentOf = (count, total) => {
   return Math.round((count / total) * 100);
 };
 
-const onlinePercent = computed(() => percentOf(counts.value.online, counts.value.total));
+const onlinePercent = computed(() =>
+  percentOf(counts.value.online, counts.value.total),
+);
 const offlinePercent = computed(() =>
   percentOf(counts.value.offline, counts.value.total),
 );

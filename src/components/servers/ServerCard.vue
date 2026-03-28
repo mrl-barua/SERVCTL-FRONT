@@ -52,7 +52,11 @@
         v-else
         class="card-btn ssh"
         :title="`Open SSH for ${server.user}@${server.host}:${server.port}`"
-        @click="handleDemoAction('SSH is disabled in demo mode. Sign up and self-host to run live terminal commands.')"
+        @click="
+          handleDemoAction(
+            'SSH is disabled in demo mode. Sign up and self-host to run live terminal commands.',
+          )
+        "
       >
         ⌨ SSH
       </button>
