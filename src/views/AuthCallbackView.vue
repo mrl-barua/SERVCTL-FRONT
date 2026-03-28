@@ -6,31 +6,31 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
+import { onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
 
-const router = useRouter()
-const route = useRoute()
-const authStore = useAuthStore()
+const router = useRouter();
+const route = useRoute();
+const authStore = useAuthStore();
 
 onMounted(async () => {
-  const token = typeof route.query.token === 'string' ? route.query.token : ''
+  const token = typeof route.query.token === "string" ? route.query.token : "";
 
   if (!token) {
-    router.replace('/login?error=sso_failed')
-    return
+    router.replace("/login?error=sso_failed");
+    return;
   }
 
   try {
-    authStore.setToken(token)
-    await authStore.fetchCurrentUser()
-    router.replace('/overview')
+    authStore.setToken(token);
+    await authStore.fetchCurrentUser();
+    router.replace("/overview");
   } catch {
-    authStore.logout()
-    router.replace('/login?error=sso_failed')
+    authStore.logout();
+    router.replace("/login?error=sso_failed");
   }
-})
+});
 </script>
 
 <style scoped>
