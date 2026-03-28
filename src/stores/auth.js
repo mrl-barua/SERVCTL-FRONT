@@ -34,6 +34,19 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.removeItem(USER_KEY)
     }
 
+    function setToken(token) {
+        accessToken.value = token || ''
+        refreshToken.value = ''
+
+        if (token) {
+            localStorage.setItem(ACCESS_TOKEN_KEY, token)
+        } else {
+            localStorage.removeItem(ACCESS_TOKEN_KEY)
+        }
+
+        localStorage.removeItem(REFRESH_TOKEN_KEY)
+    }
+
     async function login(payload) {
         loading.value = true
         try {
@@ -116,6 +129,7 @@ export const useAuthStore = defineStore('auth', () => {
         refreshSession,
         fetchCurrentUser,
         initializeAuth,
+        setToken,
         logout,
     }
 })

@@ -8,6 +8,7 @@ import LogsView from "../views/LogsView.vue";
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
 import ResetPasswordView from "../views/ResetPasswordView.vue";
+import AuthCallbackView from "../views/AuthCallbackView.vue";
 import KeyVaultView from "../views/KeyVaultView.vue";
 import InstallGuideView from "../views/InstallGuideView.vue";
 
@@ -72,6 +73,11 @@ const routes = [
     name: "reset-password",
     component: ResetPasswordView,
   },
+  {
+    path: "/auth/callback",
+    name: "auth-callback",
+    component: AuthCallbackView,
+  },
 ];
 
 const router = createRouter({
@@ -84,7 +90,8 @@ router.beforeEach((to) => {
   const isAuthRoute =
     to.name === "login" ||
     to.name === "register" ||
-    to.name === "reset-password";
+    to.name === "reset-password" ||
+    to.name === "auth-callback";
 
   if (to.meta.requiresAuth && !token) {
     return { name: "login" };
