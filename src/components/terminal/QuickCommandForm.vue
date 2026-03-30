@@ -226,6 +226,26 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 320;
+}
+
+.modal {
+  position: relative;
+  z-index: 321;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
 .qcf-modal {
   width: min(700px, 90vw);
 }

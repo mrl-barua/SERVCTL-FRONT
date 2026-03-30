@@ -135,13 +135,15 @@
     </div>
   </Teleport>
 
-  <QuickCommandForm
-    v-if="formOpen"
-    :command="editingCommand"
-    :servers="servers"
-    @save="handleSave"
-    @cancel="closeForm"
-  />
+  <Teleport to="body">
+    <QuickCommandForm
+      v-if="formOpen"
+      :command="editingCommand"
+      :servers="servers"
+      @save="handleSave"
+      @cancel="closeForm"
+    />
+  </Teleport>
 </template>
 
 <script setup>
