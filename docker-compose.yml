@@ -5,6 +5,9 @@ name: servctl-frontend
 
 services:
   frontend:
+    env_file:
+      - path: .env
+        required: false
     build:
       context: .
       dockerfile: Dockerfile
