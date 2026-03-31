@@ -2,9 +2,11 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import apiClient from '../services/http'
 import { useAuthStore } from './auth'
+import { useToastStore } from './toast'
 
 export const useServersStore = defineStore('servers', () => {
   const authStore = useAuthStore()
+  const toastStore = useToastStore()
   const servers = ref([])
 
   const loading = ref(false)
@@ -15,18 +17,6 @@ export const useServersStore = defineStore('servers', () => {
     total: 0,
     totalPages: 1,
   })
-
-  async function withAuthRetry(operation) {
-    try {
-      return await operation()
-    } catch (err) {
-      if (err?.response?.status === 401) {
-        await authStore.refreshSession()
-        return operation()
-      }
-      throw err
-    }
-  }
 
   const totalServers = computed(() => servers.value.length)
   const onlineServers = computed(() => servers.value.filter(s => s.status === 'online').length)
@@ -47,14 +37,14 @@ export const useServersStore = defineStore('servers', () => {
   }
 
   async function addServer(dto) {
-    const { data } = await withAuthRetry(() => apiClient.post('/servers', dto))
+    const { data } = await apiClient.post('/servers', dto)
     servers.value.unshift(data)
     meta.value.total += 1
     return data
   }
 
   async function removeServer(id) {
-    await withAuthRetry(() => apiClient.delete(`/servers/${id}`))
+    await apiClient.delete(`/servers/${id}`)
     const index = servers.value.findIndex(s => s.id === id)
     if (index > -1) {
       servers.value.splice(index, 1)
@@ -63,7 +53,7 @@ export const useServersStore = defineStore('servers', () => {
   }
 
   async function updateServer(id, dto) {
-    const { data } = await withAuthRetry(() => apiClient.patch(`/servers/${id}`, dto))
+    const { data } = await apiClient.patch(`/servers/${id}`, dto)
     const index = servers.value.findIndex(s => s.id === id)
     if (index > -1) {
       servers.value[index] = data
@@ -72,18 +62,26 @@ export const useServersStore = defineStore('servers', () => {
   }
 
   async function updateServerStatus(id, status, uptime) {
-    const { data } = await withAuthRetry(() =>
-      apiClient.patch(`/servers/${id}/status`, {
-        status,
-        ...(uptime !== undefined ? { uptime } : {}),
-      }),
-    )
+    const { data } = await apiClient.patch(`/servers/${id}/status`, {
+      status,
+      ...(uptime !== undefined ? { uptime } : {}),
+    })
 
     const server = getServerById(id)
     if (server) {
+      const prevStatus = server.status
       server.status = data.status
       server.uptime = data.uptime
       server.updatedAt = data.updatedAt
+
+      // Notify on status transitions
+      if (prevStatus !== data.status && prevStatus !== 'unknown') {
+        if (data.status === 'offline') {
+          toastStore.showToast(`${server.name} went offline`, 'error')
+        } else if (data.status === 'online' && prevStatus === 'offline') {
+          toastStore.showToast(`${server.name} is back online`, 'success')
+        }
+      }
     }
 
     return data
@@ -111,7 +109,7 @@ export const useServersStore = defineStore('servers', () => {
         ...(params.search ? { search: params.search } : {}),
       }
 
-      const { data } = await withAuthRetry(() => apiClient.get('/servers', { params: query }))
+      const { data } = await apiClient.get('/servers', { params: query })
       servers.value = data.items
       meta.value = {
         page: data.page,

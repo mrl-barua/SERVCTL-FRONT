@@ -9,22 +9,23 @@
 import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
+import apiClient from "../services/http";
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 
 onMounted(async () => {
-  const token = typeof route.query.token === "string" ? route.query.token : "";
+  const code = typeof route.query.code === "string" ? route.query.code : "";
 
-  if (!token) {
+  if (!code) {
     router.replace("/login?error=sso_failed");
     return;
   }
 
   try {
-    authStore.setToken(token);
-    await authStore.fetchCurrentUser();
+    const { data } = await apiClient.post("/auth/exchange-code", { code });
+    authStore.persistSession(data);
     router.replace("/overview");
   } catch {
     authStore.logout();

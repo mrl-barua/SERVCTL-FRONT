@@ -51,7 +51,10 @@
                 v-model.number="form.port"
                 type="number"
                 placeholder="22"
+                :class="{ 'input-error': formErrors.port }"
+                @input="formErrors.port = null"
               />
+              <span v-if="formErrors.port" class="field-error">{{ formErrors.port }}</span>
             </label>
             <label>
               Username
@@ -309,6 +312,7 @@ import { RouterLink } from "vue-router";
 import apiClient from "../../services/http";
 import { useAppStore } from "../../stores/app";
 import { useToastStore } from "../../stores/toast";
+import { validatePort, validateHostname } from "../../utils/validators";
 
 const props = defineProps({
   mode: {
@@ -336,6 +340,7 @@ const networkWarning = ref(null);
 const keyPathStatus = ref(null);
 let networkTimer = null;
 const isEdit = computed(() => props.mode === "edit");
+const formErrors = reactive({ name: null, host: null, port: null });
 
 const form = reactive({
   name: "",
@@ -510,8 +515,13 @@ async function ensureVaultSaveFromPaste() {
 }
 
 async function handleSubmit() {
-  if (!form.name.trim() || !form.host.trim()) {
-    toastStore.showToast("Server name and host are required.", "error");
+  formErrors.name = !form.name.trim() ? "Server name is required" : null;
+  formErrors.host = validateHostname(form.host);
+  formErrors.port = validatePort(form.port);
+
+  if (formErrors.name || formErrors.host || formErrors.port) {
+    const firstError = formErrors.name || formErrors.host || formErrors.port;
+    toastStore.showToast(firstError, "error");
     return;
   }
 

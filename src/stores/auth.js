@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import apiClient from '../services/http'
+import { STORAGE_KEYS } from '../constants/storage'
 
-const ACCESS_TOKEN_KEY = 'servctl_access_token'
-const REFRESH_TOKEN_KEY = 'servctl_refresh_token'
-const USER_KEY = 'servctl_user'
+const ACCESS_TOKEN_KEY = STORAGE_KEYS.ACCESS_TOKEN
+const REFRESH_TOKEN_KEY = STORAGE_KEYS.REFRESH_TOKEN
+const USER_KEY = STORAGE_KEYS.USER
 
 export const useAuthStore = defineStore('auth', () => {
     const accessToken = ref(localStorage.getItem(ACCESS_TOKEN_KEY) || '')
