@@ -99,19 +99,31 @@ Notes:
 
 ### Option B - Self-host with Docker (recommended)
 
+First deployment (build from source):
+
 ```bash
-# Download the production compose file
-curl -O https://raw.githubusercontent.com/mrl-barua/SERVCTL-BACK/main/docker-compose.production.yml
-curl -O https://raw.githubusercontent.com/mrl-barua/SERVCTL-BACK/main/.env.production.example
+# Clone the backend repository (needed for compose files)
+git clone https://github.com/mrl-barua/SERVCTL-BACK.git
+cd SERVCTL-BACK
 
 # Configure environment
 cp .env.production.example .env
 # Edit .env - set JWT_SECRET, ENCRYPTION_SECRET at minimum
 
-# Start SERVCTL
-docker compose -f docker-compose.production.yml up -d
+# Build and start from source (first time)
+docker compose -f docker-compose.build.yml up -d
 
 # Open http://localhost
+```
+
+Subsequent deployments (pull from registry):
+
+```bash
+# Pull latest images
+docker compose -f docker-compose.production.yml pull
+
+# Restart
+docker compose -f docker-compose.production.yml up -d
 ```
 
 Generate required secrets:
@@ -121,10 +133,16 @@ openssl rand -hex 32   # use for JWT_SECRET
 openssl rand -hex 32   # use for ENCRYPTION_SECRET
 ```
 
+Images and availability:
+- First deployment builds frontend and backend images locally.
+- Once built, images can be used repeatedly with compose.
+- To pull pre-built images from ghcr.io, use docker-compose.production.yml.
+- If you see "failed to resolve reference" error, use docker-compose.build.yml instead.
+
 Recommended next checks after startup:
 
 - Confirm frontend loads on your configured FRONTEND_PORT.
-- Confirm backend health endpoint responds.
+- Confirm backend health endpoint responds at http://localhost:3000/health.
 - Add one server and run a harmless command.
 - Verify logs and terminal stream in real time.
 
@@ -334,7 +352,69 @@ Roadmap principles:
 - Favor deployability and observability over feature volume.
 - Maintain strict self-host compatibility for every release.
 
-## 12. LICENSE
+## 12. TROUBLESHOOTING
+
+### Docker: "failed to resolve reference" / 403 Forbidden
+
+**Error:**
+```
+failed to resolve reference "ghcr.io/mrl-barua/servctl-frontend:latest"
+failed to authorize: failed to fetch oauth token ... 403 Forbidden
+```
+
+**Solution:**
+Images may not exist on ghcr.io yet if this is the first deployment. Use docker-compose.build.yml instead:
+
+```bash
+cd SERVCTL-BACK
+docker compose -f docker-compose.build.yml up -d
+```
+
+This builds frontend and backend images locally from source instead of pulling from the registry.
+
+### Docker: "connection refused" on http://localhost
+
+**Problem:** Services started but won't respond.
+
+**Solutions:**
+- Verify containers are running: `docker ps`
+- Check logs: `docker compose logs -f backend` or `docker compose logs -f frontend`
+- Ensure JWT_SECRET and ENCRYPTION_SECRET are set in .env
+- Wait 10-15 seconds after starting — services need time to initialize
+- Check that ports 80 (frontend) and 3000 (backend) are not in use
+
+### Frontend won't load in browser
+
+**Problem:** Browser shows blank page or 404.
+
+**Solutions:**
+- Verify FRONTEND_PORT is correct in .env (default 80)
+- Check frontend container logs: `docker compose logs frontend`
+- Confirm you're accessing correct port: http://localhost:FRONTEND_PORT
+- Try clearing browser cache (Ctrl+Shift+Delete or Cmd+Shift+Delete)
+
+### Terminal / Logs not working
+
+**Problem:** Terminal commands fail or logs don't stream.
+
+**Solutions:**
+- Verify backend is healthy: curl http://localhost:3000/health
+- Check SSH connectivity from backend container to servers
+- Ensure servers are added with correct IP/hostname
+- Verify SSH keys are mounted: `docker exec servctl-backend ls /home/servctl/.ssh`
+- Check backend logs: `docker compose logs backend`
+
+### SSH key issues
+
+**Problem:** SSH key upload fails or commands don't execute.
+
+**Causes and fixes:**
+- Ensure SSH_KEYS_DIR in .env points to valid host directory with SSH keys
+- Verify key file permissions (600): `chmod 600 ~/.ssh/id_rsa`
+- Keys must be OpenSSH format, not PuTTY format
+- Try adding a test server with manual SSH to verify connectivity
+
+## 13. LICENSE
 
 MIT License - free for personal and commercial use.
 
@@ -345,7 +425,7 @@ Copyright (c) 2025 mrl-barua
 
 Full license in LICENSE file.
 
-## 13. FOOTER
+## 14. FOOTER
 
 ---
 
