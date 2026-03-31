@@ -32,25 +32,58 @@
       </div>
     </div>
 
-    <div class="form-row" style="margin-bottom: 14px">
-      <label class="form-label">active server</label>
-      <select
-        v-model.number="selectedServerId"
-        class="form-select"
-        style="max-width: 280px"
-      >
-        <option value="">select a server</option>
-        <option
-          v-for="server in serversStore.servers"
-          :key="server.id"
-          :value="server.id"
+    <div class="terminal-toolbar">
+      <div class="form-row" style="margin-bottom: 0">
+        <label class="form-label">active server</label>
+        <select
+          v-model.number="selectedServerId"
+          class="form-select"
+          style="max-width: 280px"
         >
-          {{ server.name }} ({{ server.host }})
-        </option>
-      </select>
+          <option value="">select a server</option>
+          <option
+            v-for="server in serversStore.servers"
+            :key="server.id"
+            :value="server.id"
+          >
+            {{ server.name }} ({{ server.host }})
+          </option>
+        </select>
+      </div>
+
+      <div class="split-controls">
+        <button
+          :class="['card-btn', { active: splitMode }]"
+          @click="toggleSplitMode"
+        >
+          {{ splitMode ? '⊞ Exit Split' : '⊞ Split Terminal' }}
+        </button>
+        <template v-if="splitMode">
+          <button class="card-btn" @click="addPaneFromSelected" :disabled="!selectedServerId">
+            + Add Pane
+          </button>
+          <select v-model="multiTermStore.layout" class="form-select layout-select">
+            <option value="horizontal">Horizontal</option>
+            <option value="vertical">Vertical</option>
+            <option value="grid">Grid</option>
+          </select>
+          <button
+            :class="['card-btn', { active: multiTermStore.broadcastMode }]"
+            @click="multiTermStore.broadcastMode = !multiTermStore.broadcastMode"
+          >
+            {{ multiTermStore.broadcastMode ? '📡 Broadcasting' : '📡 Broadcast' }}
+          </button>
+        </template>
+      </div>
     </div>
 
-    <TerminalPanel :serverId="selectedServerId" />
+    <template v-if="!splitMode">
+      <TerminalPanel :serverId="selectedServerId" />
+    </template>
+    <template v-else>
+      <MultiTerminalView />
+      <BroadcastInputBar v-if="multiTermStore.broadcastMode" />
+    </template>
 
     <div class="quick-cmds-bar">
       <div class="quick-cmds-label">quick commands</div>
@@ -92,14 +125,36 @@ import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useServersStore } from "../stores/servers";
 import { useQuickCommandsStore } from "../stores/quickCommands";
+import { useMultiTerminalStore } from "../stores/multiTerminal";
 import TerminalPanel from "../components/terminal/TerminalPanel.vue";
+import MultiTerminalView from "../components/terminal/MultiTerminalView.vue";
+import BroadcastInputBar from "../components/terminal/BroadcastInputBar.vue";
 import QuickCommandsManager from "../components/terminal/QuickCommandsManager.vue";
 
 const route = useRoute();
 const serversStore = useServersStore();
 const qcStore = useQuickCommandsStore();
+const multiTermStore = useMultiTerminalStore();
 const selectedServerId = ref(0);
 const managerOpen = ref(false);
+const splitMode = ref(false);
+
+function toggleSplitMode() {
+  splitMode.value = !splitMode.value;
+  if (splitMode.value && multiTermStore.panes.length === 0 && selectedServerId.value) {
+    addPaneFromSelected();
+  }
+  if (!splitMode.value) {
+    multiTermStore.cleanup();
+  }
+}
+
+function addPaneFromSelected() {
+  const server = serversStore.getServerById(selectedServerId.value);
+  if (server) {
+    multiTermStore.addPane(server);
+  }
+}
 const bannerExpanded = ref(false);
 const bannerDismissed = ref(
   localStorage.getItem("servctl_banner_dismissed") === "true",
@@ -162,6 +217,33 @@ function dismissBanner() {
 </script>
 
 <style scoped>
+.terminal-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.split-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.split-controls .card-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--bg4);
+}
+
+.layout-select {
+  font-size: 10px;
+  padding: 4px 8px;
+}
+
 .ssh-banner {
   background: #0d1a2b;
   border: 1px solid var(--accent2);

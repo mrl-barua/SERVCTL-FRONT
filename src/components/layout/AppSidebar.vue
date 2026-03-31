@@ -64,6 +64,17 @@
           <template v-if="!collapsed">Keys</template>
         </button>
       </router-link>
+
+      <router-link to="/health" custom v-slot="{ isActive, navigate }">
+        <button
+          @click="navigate"
+          :class="['nav-item', { active: isActive }]"
+          :data-tooltip="collapsed ? 'Health' : ''"
+        >
+          <span class="icon">♥</span>
+          <template v-if="!collapsed">Health</template>
+        </button>
+      </router-link>
     </div>
 
     <div v-if="!collapsed" class="sidebar-servers">

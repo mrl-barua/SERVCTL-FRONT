@@ -1,6 +1,25 @@
 <template>
-  <div :class="['server-card', server.env]">
+  <div
+    :class="['server-card', server.env, { dragging: isDragging, selected: selected }]"
+    draggable="true"
+    @dragstart="onDragStart"
+    @dragend="onDragEnd"
+    @mouseenter="isHovered = true"
+    @mouseleave="isHovered = false"
+  >
     <div class="card-top">
+      <label
+        v-if="selectable || isHovered"
+        class="select-checkbox"
+        @click.stop
+      >
+        <input
+          type="checkbox"
+          :checked="selected"
+          @change="emit('toggle-select', server.id)"
+        />
+        <span class="checkbox-mark"></span>
+      </label>
       <div class="card-icon">{{ envIcons[server.env] }}</div>
       <div style="flex: 1; min-width: 0">
         <div class="card-name">{{ server.name }}</div>
@@ -124,9 +143,32 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  selected: {
+    type: Boolean,
+    default: false,
+  },
+  selectable: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emit = defineEmits(["demo-gate"]);
+const emit = defineEmits(["demo-gate", "toggle-select", "dragstart", "dragend"]);
+
+const isDragging = ref(false);
+const isHovered = ref(false);
+
+function onDragStart(e) {
+  isDragging.value = true;
+  e.dataTransfer.effectAllowed = "move";
+  e.dataTransfer.setData("text/plain", String(props.server.id));
+  emit("dragstart", props.server.id);
+}
+
+function onDragEnd() {
+  isDragging.value = false;
+  emit("dragend");
+}
 
 const router = useRouter();
 const serversStore = useServersStore();
@@ -282,7 +324,62 @@ function handleDemoAction(message) {
   transform: translateY(-2px);
 }
 
+.server-card.dragging {
+  opacity: 0.4;
+  border-color: var(--accent);
+}
+
 .server-card.selected {
+  border-color: var(--accent);
+  background: rgba(79, 142, 247, 0.06);
+}
+
+.select-checkbox {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.select-checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.checkbox-mark {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid var(--border2);
+  background: var(--bg4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+}
+
+.select-checkbox input[type="checkbox"]:checked + .checkbox-mark {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.select-checkbox input[type="checkbox"]:checked + .checkbox-mark::after {
+  content: "";
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-top: -2px;
+}
+
+.checkbox-mark:hover {
   border-color: var(--accent);
 }
 

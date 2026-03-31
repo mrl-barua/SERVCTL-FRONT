@@ -56,6 +56,7 @@ const routeTitles = {
   deploy: "Deploy",
   logs: "Logs",
   keys: "SSH Key Vault",
+  health: "Server Health",
 };
 
 const routeTitle = computed(() => {

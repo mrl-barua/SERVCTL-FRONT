@@ -32,15 +32,32 @@
       />
     </div>
 
+    <div class="overview-toolbar">
+      <button class="toolbar-btn" @click="showTagManager = true">
+        🏷 Manage Tags
+      </button>
+      <button class="toolbar-btn" @click="showGroupManager = true">
+        📂 Manage Groups
+      </button>
+    </div>
+
     <ServerGrid />
+
+    <TagManager v-model="showTagManager" />
+    <GroupManager v-model="showGroupManager" />
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useServersStore } from "../stores/servers";
 import StatCard from "../components/servers/StatCard.vue";
 import ServerGrid from "../components/servers/ServerGrid.vue";
+import TagManager from "../components/servers/TagManager.vue";
+import GroupManager from "../components/servers/GroupManager.vue";
+
+const showTagManager = ref(false);
+const showGroupManager = ref(false);
 
 const serversStore = useServersStore();
 
@@ -84,5 +101,31 @@ onMounted(async () => {
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 10px;
   margin-bottom: 20px;
+}
+
+.overview-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.toolbar-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 5px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.12s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 </style>
