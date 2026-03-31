@@ -7,13 +7,13 @@ on:
       - master
   release:
     types:
-      - published        # also trigger on GitHub releases
-  workflow_dispatch:     # allow manual trigger from GitHub UI
+      - published # also trigger on GitHub releases
+  workflow_dispatch: # allow manual trigger from GitHub UI
     inputs:
       tag:
-        description: 'Custom image tag (optional)'
+        description: "Custom image tag (optional)"
         required: false
-        default: 'latest'
+        default: "latest"
 
 env:
   REGISTRY: ghcr.io
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write     # required to push to ghcr.io
+      packages: write # required to push to ghcr.io
 
     steps:
       - name: Checkout repository
