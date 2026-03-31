@@ -52,8 +52,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             # manual tag from workflow_dispatch
-            type=raw,value=${{ github.event.inputs.tag }},
-              enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=raw,value=${{ github.event.inputs.tag }},enable=${{ github.event_name == 'workflow_dispatch' }}
 
       - name: Set up QEMU (multi-platform builds)
         uses: docker/setup-qemu-action@v3
