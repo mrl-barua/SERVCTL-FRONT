@@ -1,45 +1,72 @@
 <template>
-  <nav class="sidebar">
+  <nav class="sidebar" :class="{ 'is-collapsed': collapsed }">
     <div class="sidebar-logo">
-      <div class="logo-text">SERVCTL</div>
-      <div class="logo-sub">server control panel</div>
+      <div class="logo-text">{{ collapsed ? "S" : "SERVCTL" }}</div>
+      <div v-if="!collapsed" class="logo-sub">server control panel</div>
     </div>
 
     <div class="sidebar-section">
-      <div class="sidebar-label">navigation</div>
+      <div v-if="!collapsed" class="sidebar-label">navigation</div>
       <router-link to="/overview" custom v-slot="{ isActive, navigate }">
-        <button @click="navigate" :class="['nav-item', { active: isActive }]">
-          <span class="icon">⬡</span> Overview
-          <span class="nav-count">{{ serversStore.totalServers }}</span>
+        <button
+          @click="navigate"
+          :class="['nav-item', { active: isActive }]"
+          :data-tooltip="collapsed ? 'Overview' : ''"
+        >
+          <span class="icon">⬡</span>
+          <template v-if="!collapsed">
+            Overview
+            <span class="nav-count">{{ serversStore.totalServers }}</span>
+          </template>
         </button>
       </router-link>
 
       <router-link to="/terminal" custom v-slot="{ isActive, navigate }">
-        <button @click="navigate" :class="['nav-item', { active: isActive }]">
-          <span class="icon">&gt;_</span> Terminal
+        <button
+          @click="navigate"
+          :class="['nav-item', { active: isActive }]"
+          :data-tooltip="collapsed ? 'Terminal' : ''"
+        >
+          <span class="icon">&gt;_</span>
+          <template v-if="!collapsed">Terminal</template>
         </button>
       </router-link>
 
       <router-link to="/deploy" custom v-slot="{ isActive, navigate }">
-        <button @click="navigate" :class="['nav-item', { active: isActive }]">
-          <span class="icon">↑</span> Deploy
+        <button
+          @click="navigate"
+          :class="['nav-item', { active: isActive }]"
+          :data-tooltip="collapsed ? 'Deploy' : ''"
+        >
+          <span class="icon">↑</span>
+          <template v-if="!collapsed">Deploy</template>
         </button>
       </router-link>
 
       <router-link to="/logs" custom v-slot="{ isActive, navigate }">
-        <button @click="navigate" :class="['nav-item', { active: isActive }]">
-          <span class="icon">≡</span> Logs
+        <button
+          @click="navigate"
+          :class="['nav-item', { active: isActive }]"
+          :data-tooltip="collapsed ? 'Logs' : ''"
+        >
+          <span class="icon">≡</span>
+          <template v-if="!collapsed">Logs</template>
         </button>
       </router-link>
 
       <router-link to="/keys" custom v-slot="{ isActive, navigate }">
-        <button @click="navigate" :class="['nav-item', { active: isActive }]">
-          <span class="icon">🔑</span> Keys
+        <button
+          @click="navigate"
+          :class="['nav-item', { active: isActive }]"
+          :data-tooltip="collapsed ? 'Keys' : ''"
+        >
+          <span class="icon">🔑</span>
+          <template v-if="!collapsed">Keys</template>
         </button>
       </router-link>
     </div>
 
-    <div class="sidebar-servers">
+    <div v-if="!collapsed" class="sidebar-servers">
       <template v-for="env in envOrder" :key="env">
         <template v-if="serversStore.serversByEnv[env].length > 0">
           <div class="env-group-title">{{ envLabels[env] }}</div>
@@ -61,12 +88,25 @@
         </template>
       </template>
     </div>
+
+    <button class="collapse-toggle" @click="emit('toggle-collapse')">
+      {{ collapsed ? "»" : "«" }}
+    </button>
   </nav>
 </template>
 
 <script setup>
 import { onMounted } from "vue";
 import { useServersStore } from "../../stores/servers";
+
+defineProps({
+  collapsed: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const emit = defineEmits(["toggle-collapse"]);
 
 const serversStore = useServersStore();
 
@@ -87,13 +127,14 @@ onMounted(async () => {
 
 <style scoped>
 .sidebar {
-  width: 220px;
   flex-shrink: 0;
   background: var(--bg2);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
 }
 
 .sidebar-logo {
@@ -246,5 +287,69 @@ onMounted(async () => {
     opacity: 0.6;
     box-shadow: 0 0 12px var(--green);
   }
+}
+
+/* Collapsed state */
+.is-collapsed .sidebar-logo {
+  padding: 16px 0;
+  text-align: center;
+}
+
+.is-collapsed .logo-text {
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.is-collapsed .sidebar-section {
+  padding: 14px 4px 6px;
+}
+
+.is-collapsed .nav-item {
+  justify-content: center;
+  padding: 10px;
+  position: relative;
+}
+
+.is-collapsed .nav-item .icon {
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+}
+
+/* Tooltip on hover when collapsed */
+.is-collapsed .nav-item[data-tooltip]:not([data-tooltip=""]):hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 52px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg4);
+  color: var(--text);
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 300;
+  border: 1px solid var(--border2);
+  pointer-events: none;
+}
+
+/* Collapse toggle button */
+.collapse-toggle {
+  margin-top: auto;
+  padding: 10px;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  color: var(--text3);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.collapse-toggle:hover {
+  color: var(--accent);
+  background: var(--bg3);
 }
 </style>
