@@ -134,6 +134,7 @@ openssl rand -hex 32   # use for ENCRYPTION_SECRET
 ```
 
 Images and availability:
+
 - First deployment builds frontend and backend images locally.
 - Once built, images can be used repeatedly with compose.
 - To pull pre-built images from ghcr.io, use docker-compose.production.yml.
@@ -357,6 +358,7 @@ Roadmap principles:
 ### Docker: "failed to resolve reference" / 403 Forbidden
 
 **Error:**
+
 ```
 failed to resolve reference "ghcr.io/mrl-barua/servctl-frontend:latest"
 failed to authorize: failed to fetch oauth token ... 403 Forbidden
@@ -377,6 +379,7 @@ This builds frontend and backend images locally from source instead of pulling f
 **Problem:** Services started but won't respond.
 
 **Solutions:**
+
 - Verify containers are running: `docker ps`
 - Check logs: `docker compose logs -f backend` or `docker compose logs -f frontend`
 - Ensure JWT_SECRET and ENCRYPTION_SECRET are set in .env
@@ -388,6 +391,7 @@ This builds frontend and backend images locally from source instead of pulling f
 **Problem:** Browser shows blank page or 404.
 
 **Solutions:**
+
 - Verify FRONTEND_PORT is correct in .env (default 80)
 - Check frontend container logs: `docker compose logs frontend`
 - Confirm you're accessing correct port: http://localhost:FRONTEND_PORT
@@ -398,6 +402,7 @@ This builds frontend and backend images locally from source instead of pulling f
 **Problem:** Terminal commands fail or logs don't stream.
 
 **Solutions:**
+
 - Verify backend is healthy: curl http://localhost:3000/health
 - Check SSH connectivity from backend container to servers
 - Ensure servers are added with correct IP/hostname
@@ -409,6 +414,7 @@ This builds frontend and backend images locally from source instead of pulling f
 **Problem:** SSH key upload fails or commands don't execute.
 
 **Causes and fixes:**
+
 - Ensure SSH_KEYS_DIR in .env points to valid host directory with SSH keys
 - Verify key file permissions (600): `chmod 600 ~/.ssh/id_rsa`
 - Keys must be OpenSSH format, not PuTTY format
