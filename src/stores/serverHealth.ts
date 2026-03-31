@@ -3,16 +3,19 @@ import { ref } from 'vue'
 import apiClient from '../services/http'
 import { useToastStore } from './toast'
 
-interface HealthSnapshot {
+export interface HealthSnapshot {
   id: number
   serverId: number
-  cpuUsage: number
-  memoryUsage: number
-  diskUsage: number
-  memoryTotal: number
-  memoryUsed: number
-  diskTotal: number
-  diskUsed: number
+  cpuPercent: number
+  memPercent: number
+  diskPercent: number
+  memTotalMb: number
+  memUsedMb: number
+  diskTotalGb: number
+  diskUsedGb: number
+  loadAvg1?: number
+  loadAvg5?: number
+  loadAvg15?: number
   createdAt: string
 }
 
@@ -41,10 +44,13 @@ export const useServerHealthStore = defineStore('serverHealth', () => {
     try {
       const { data } = await apiClient.get(`/server-health/${serverId}/current`)
       currentHealth.value[serverId] = data
-      return data
+      return data as HealthSnapshot
     } catch (err: any) {
       error.value = err?.response?.data?.message || err.message
-      toastStore.showToast('Failed to fetch server health', 'error')
+      // 404 means no data yet — not a real error worth toasting
+      if (err?.response?.status !== 404) {
+        toastStore.showToast('Failed to fetch server health', 'error')
+      }
       throw err
     } finally {
       loading.value = false
@@ -59,7 +65,7 @@ export const useServerHealthStore = defineStore('serverHealth', () => {
         params: { limit },
       })
       snapshots.value[serverId] = data
-      return data
+      return data as HealthSnapshot[]
     } catch (err: any) {
       error.value = err?.response?.data?.message || err.message
       toastStore.showToast('Failed to fetch health history', 'error')
@@ -73,9 +79,11 @@ export const useServerHealthStore = defineStore('serverHealth', () => {
     error.value = null
     try {
       const { data } = await apiClient.post(`/server-health/${serverId}/collect`)
-      currentHealth.value[serverId] = data
+      // Backend returns { snapshot, triggeredAlerts } — extract the snapshot
+      const snapshot: HealthSnapshot = data.snapshot ?? data
+      currentHealth.value[serverId] = snapshot
       toastStore.showToast('Health data collected', 'success')
-      return data
+      return snapshot
     } catch (err: any) {
       error.value = err?.response?.data?.message || err.message
       toastStore.showToast('Failed to collect health data', 'error')

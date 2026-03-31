@@ -17,17 +17,17 @@
       <!-- Gauges row -->
       <div class="gauges-row">
         <GaugeCard
-          :value="currentData.cpuUsage ?? 0"
+          :value="currentData.cpuPercent ?? 0"
           label="CPU"
           :sub-label="cpuSubLabel"
         />
         <GaugeCard
-          :value="currentData.memoryUsage ?? 0"
+          :value="currentData.memPercent ?? 0"
           label="Memory"
           :sub-label="memSubLabel"
         />
         <GaugeCard
-          :value="currentData.diskUsage ?? 0"
+          :value="currentData.diskPercent ?? 0"
           label="Disk"
           :sub-label="diskSubLabel"
         />
@@ -96,35 +96,41 @@ const collecting = ref(false)
 const currentData = computed(() => healthStore.currentHealth[props.serverId])
 const historyData = computed(() => healthStore.snapshots[props.serverId] || [])
 
-const cpuHistory = computed(() => historyData.value.map((s: any) => s.cpuUsage ?? 0))
-const memHistory = computed(() => historyData.value.map((s: any) => s.memoryUsage ?? 0))
-const diskHistory = computed(() => historyData.value.map((s: any) => s.diskUsage ?? 0))
+const cpuHistory = computed(() => historyData.value.map((s: any) => s.cpuPercent ?? 0))
+const memHistory = computed(() => historyData.value.map((s: any) => s.memPercent ?? 0))
+const diskHistory = computed(() => historyData.value.map((s: any) => s.diskPercent ?? 0))
 
 const cpuSubLabel = computed(() => {
   if (!currentData.value) return ''
-  return `${(currentData.value.cpuUsage ?? 0).toFixed(1)}%`
+  return `${(currentData.value.cpuPercent ?? 0).toFixed(1)}%`
 })
 
 const memSubLabel = computed(() => {
   if (!currentData.value) return ''
-  const used = currentData.value.memoryUsed ?? 0
-  const total = currentData.value.memoryTotal ?? 0
-  return `${formatBytes(used)} / ${formatBytes(total)}`
+  const used = currentData.value.memUsedMb ?? 0
+  const total = currentData.value.memTotalMb ?? 0
+  return `${formatMb(used)} / ${formatMb(total)}`
 })
 
 const diskSubLabel = computed(() => {
   if (!currentData.value) return ''
-  const used = currentData.value.diskUsed ?? 0
-  const total = currentData.value.diskTotal ?? 0
-  return `${formatBytes(used)} / ${formatBytes(total)}`
+  const used = currentData.value.diskUsedGb ?? 0
+  const total = currentData.value.diskTotalGb ?? 0
+  return `${formatGb(used)} / ${formatGb(total)}`
 })
 
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const units = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(1024))
-  const val = bytes / Math.pow(1024, i)
-  return `${val.toFixed(1)} ${units[i] || 'B'}`
+/** Format a value in megabytes to a human-readable string */
+function formatMb(mb: number): string {
+  if (mb === 0) return '0 B'
+  if (mb < 1024) return `${Math.round(mb)} MB`
+  return `${(mb / 1024).toFixed(1)} GB`
+}
+
+/** Format a value in gigabytes to a human-readable string */
+function formatGb(gb: number): string {
+  if (gb === 0) return '0 B'
+  if (gb < 1) return `${Math.round(gb * 1024)} MB`
+  return `${gb.toFixed(1)} GB`
 }
 
 function formatTime(iso: string): string {
