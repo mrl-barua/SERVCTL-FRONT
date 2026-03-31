@@ -88,13 +88,22 @@ export const useServersStore = defineStore('servers', () => {
   }
 
   async function pingAll() {
-    const updates = servers.value.map((server) => {
-      const nextStatus = server.status === 'online' ? 'online' : Math.random() > 0.25 ? 'online' : 'offline'
-      const nextUptime = nextStatus === 'online' ? Number((95 + Math.random() * 5).toFixed(1)) : 0
-      return updateServerStatus(server.id, nextStatus, nextUptime)
-    })
+    const serverIds = servers.value.map((s) => s.id)
+    if (serverIds.length === 0) return
 
-    await Promise.all(updates)
+    const { data } = await apiClient.post('/servers/bulk/ping', { serverIds })
+
+    if (data.results) {
+      for (const result of data.results) {
+        const server = getServerById(result.id)
+        if (server) {
+          server.status = result.status
+          server.uptime = result.uptime
+        }
+      }
+    }
+
+    return data
   }
 
   async function fetchServers(params = {}) {

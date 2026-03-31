@@ -1,18 +1,13 @@
 import { defineStore } from 'pinia'
 import apiClient from '../services/http'
 
-export interface ServerGroupMember {
-  id: number
-  serverId: number
-  groupId: number
-}
-
 export interface ServerGroup {
   id: number
   name: string
   color: string
   sortOrder: number
-  members: ServerGroupMember[]
+  serverIds?: number[]
+  _count?: { members: number }
   createdAt?: string
   updatedAt?: string
 }
@@ -26,9 +21,7 @@ export const useServerGroupsStore = defineStore('serverGroups', {
 
   getters: {
     groupsForServer: (state) => (serverId: number) => {
-      return state.groups.filter((g) =>
-        g.members?.some((m) => m.serverId === serverId),
-      )
+      return state.groups.filter((g) => g.serverIds?.includes(serverId))
     },
   },
 
@@ -92,15 +85,12 @@ export const useServerGroupsStore = defineStore('serverGroups', {
     async addServersToGroup(groupId: number, serverIds: number[]) {
       this.error = null
       try {
-        const { data } = await apiClient.post(
+        await apiClient.post(
           `/server-groups/${groupId}/servers`,
           { serverIds },
         )
-        const idx = this.groups.findIndex((g) => g.id === groupId)
-        if (idx !== -1) {
-          this.groups[idx] = data
-        }
-        return data as ServerGroup
+        // Refetch all groups to get updated counts and serverIds
+        await this.fetchGroups()
       } catch (err: any) {
         this.error =
           err?.response?.data?.message || 'Failed to add servers to group'
@@ -114,9 +104,13 @@ export const useServerGroupsStore = defineStore('serverGroups', {
         await apiClient.delete(
           `/server-groups/${groupId}/servers/${serverId}`,
         )
+        // Update local state immediately for responsiveness
         const group = this.groups.find((g) => g.id === groupId)
         if (group) {
-          group.members = group.members.filter((m) => m.serverId !== serverId)
+          group.serverIds = (group.serverIds ?? []).filter((id) => id !== serverId)
+          if (group._count) {
+            group._count.members = Math.max(0, (group._count.members ?? 0) - 1)
+          }
         }
       } catch (err: any) {
         this.error =

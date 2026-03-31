@@ -53,14 +53,45 @@
                 {{ group.name }}
               </span>
               <span class="group-count">
-                {{ group.members?.length || 0 }} server{{ (group.members?.length || 0) !== 1 ? 's' : '' }}
+                {{ group._count?.members || 0 }} server{{ (group._count?.members || 0) !== 1 ? 's' : '' }}
               </span>
               <div class="row-actions">
+                <button class="row-btn assign-btn" @click="openAssignPanel(group)">+ Assign</button>
                 <button class="row-btn" @click="startEdit(group)">Edit</button>
                 <button class="row-btn danger" @click="handleDelete(group)">Delete</button>
               </div>
             </template>
           </div>
+        </section>
+
+        <section v-if="assigningGroup" class="assign-section">
+          <div class="assign-header">
+            <h3>Add servers to "{{ assigningGroup.name }}"</h3>
+            <button class="row-btn" @click="assigningGroup = null">Close</button>
+          </div>
+          <div class="server-checklist">
+            <label
+              v-for="server in serversStore.servers"
+              :key="server.id"
+              class="server-check-item"
+            >
+              <input
+                type="checkbox"
+                :checked="assignSelectedIds.has(server.id)"
+                @change="toggleAssignServer(server.id)"
+              />
+              <span class="check-dot" :class="server.status"></span>
+              <span class="check-name">{{ server.name }}</span>
+              <span class="check-host">{{ server.host }}</span>
+            </label>
+          </div>
+          <button
+            class="btn primary"
+            :disabled="!assignHasChanges"
+            @click="confirmAssign"
+          >
+            Save changes
+          </button>
         </section>
 
         <section class="create-section">
@@ -102,8 +133,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
 import { useServerGroupsStore } from '../../stores/serverGroups'
+import { useServersStore } from '../../stores/servers'
 import { useToastStore } from '../../stores/toast'
 import ConfirmModal from '../common/ConfirmModal.vue'
 import type { ServerGroup } from '../../stores/serverGroups'
@@ -117,6 +149,7 @@ const emit = defineEmits<{
 }>()
 
 const groupsStore = useServerGroupsStore()
+const serversStore = useServersStore()
 const toastStore = useToastStore()
 
 const presetColors = [
@@ -139,6 +172,75 @@ const editInput = ref<HTMLInputElement | null>(null)
 const showDeleteConfirm = ref(false)
 const pendingDeleteGroup = ref<ServerGroup | null>(null)
 const deleting = ref(false)
+
+const assigningGroup = ref<ServerGroup | null>(null)
+const assignSelectedIds = ref<Set<number>>(new Set())
+
+// True when the current selection differs from the group's existing members
+const assignHasChanges = computed(() => {
+  if (!assigningGroup.value) return false
+  const prevIds = new Set(assigningGroup.value.serverIds ?? [])
+  const nextIds = assignSelectedIds.value
+  if (prevIds.size !== nextIds.size) return true
+  for (const id of nextIds) {
+    if (!prevIds.has(id)) return true
+  }
+  return false
+})
+
+function openAssignPanel(group: ServerGroup) {
+  assigningGroup.value = group
+  // Pre-populate with servers already in this group
+  assignSelectedIds.value = new Set(group.serverIds ?? [])
+}
+
+function toggleAssignServer(serverId: number) {
+  const set = new Set(assignSelectedIds.value)
+  if (set.has(serverId)) {
+    set.delete(serverId)
+  } else {
+    set.add(serverId)
+  }
+  assignSelectedIds.value = set
+}
+
+async function confirmAssign() {
+  if (!assigningGroup.value || !assignHasChanges.value) return
+
+  const groupId = assigningGroup.value.id
+  const groupName = assigningGroup.value.name
+  const prevIds = new Set(assigningGroup.value.serverIds ?? [])
+  const nextIds = assignSelectedIds.value
+
+  const toAdd = Array.from(nextIds).filter((id) => !prevIds.has(id))
+  const toRemove = Array.from(prevIds).filter((id) => !nextIds.has(id))
+
+  try {
+    // Remove unchecked servers first (updates local state immediately)
+    for (const serverId of toRemove) {
+      await groupsStore.removeServerFromGroup(groupId, serverId)
+    }
+    // Add newly checked servers (calls fetchGroups internally for full refresh)
+    if (toAdd.length > 0) {
+      await groupsStore.addServersToGroup(groupId, toAdd)
+    } else {
+      // Only removals — refetch once to sync counts
+      await groupsStore.fetchGroups()
+    }
+
+    const parts: string[] = []
+    if (toAdd.length > 0) parts.push(`${toAdd.length} added`)
+    if (toRemove.length > 0) parts.push(`${toRemove.length} removed`)
+    toastStore.showToast(`"${groupName}": ${parts.join(', ')}`, 'success')
+    assigningGroup.value = null
+    assignSelectedIds.value = new Set()
+  } catch (err: any) {
+    toastStore.showToast(
+      err?.response?.data?.message || 'Failed to update group members',
+      'error',
+    )
+  }
+}
 
 // Drag and drop state
 const dragIndex = ref<number | null>(null)
@@ -455,6 +557,86 @@ onMounted(() => {
 
 .row-btn.danger:hover {
   background: var(--red-bg);
+}
+
+.assign-section {
+  border: 1px solid var(--accent2);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+  background: var(--bg3);
+}
+
+.assign-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.assign-header h3 {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.server-checklist {
+  display: grid;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.server-check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.server-check-item:hover {
+  background: var(--bg4);
+}
+
+.server-check-item input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
+.check-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.check-dot.online { background: var(--green); }
+.check-dot.offline { background: var(--red); }
+.check-dot.unknown { background: var(--yellow); }
+
+.check-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.check-host {
+  color: var(--text3);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.assign-btn {
+  border-color: var(--accent2) !important;
+  color: var(--accent) !important;
 }
 
 .create-section {

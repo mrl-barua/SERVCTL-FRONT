@@ -44,14 +44,45 @@
                 {{ tag.name }}
               </span>
               <span class="tag-count">
-                {{ tag.servers?.length || 0 }} server{{ (tag.servers?.length || 0) !== 1 ? 's' : '' }}
+                {{ tag._count?.assignments || 0 }} server{{ (tag._count?.assignments || 0) !== 1 ? 's' : '' }}
               </span>
               <div class="row-actions">
+                <button class="row-btn assign-btn" @click="openAssignPanel(tag)">+ Assign</button>
                 <button class="row-btn" @click="startEdit(tag)">Edit</button>
                 <button class="row-btn danger" @click="handleDelete(tag)">Delete</button>
               </div>
             </template>
           </div>
+        </section>
+
+        <section v-if="assigningTag" class="assign-section">
+          <div class="assign-header">
+            <h3>Assign servers to "{{ assigningTag.name }}"</h3>
+            <button class="row-btn" @click="assigningTag = null">Close</button>
+          </div>
+          <div class="server-checklist">
+            <label
+              v-for="server in serversStore.servers"
+              :key="server.id"
+              class="server-check-item"
+            >
+              <input
+                type="checkbox"
+                :checked="assignSelectedIds.has(server.id)"
+                @change="toggleAssignServer(server.id)"
+              />
+              <span class="check-dot" :class="server.status"></span>
+              <span class="check-name">{{ server.name }}</span>
+              <span class="check-host">{{ server.host }}</span>
+            </label>
+          </div>
+          <button
+            class="btn primary"
+            :disabled="!assignHasChanges"
+            @click="confirmAssign"
+          >
+            Save changes
+          </button>
         </section>
 
         <section class="create-section">
@@ -93,8 +124,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
 import { useServerTagsStore } from '../../stores/serverTags'
+import { useServersStore } from '../../stores/servers'
 import { useToastStore } from '../../stores/toast'
 import ConfirmModal from '../common/ConfirmModal.vue'
 import type { ServerTag } from '../../stores/serverTags'
@@ -108,6 +140,7 @@ const emit = defineEmits<{
 }>()
 
 const tagsStore = useServerTagsStore()
+const serversStore = useServersStore()
 const toastStore = useToastStore()
 
 const presetColors = [
@@ -130,6 +163,75 @@ const editInput = ref<HTMLInputElement | null>(null)
 const showDeleteConfirm = ref(false)
 const pendingDeleteTag = ref<ServerTag | null>(null)
 const deleting = ref(false)
+
+const assigningTag = ref<ServerTag | null>(null)
+const assignSelectedIds = ref<Set<number>>(new Set())
+
+// True when the current selection differs from the tag's existing assignments
+const assignHasChanges = computed(() => {
+  if (!assigningTag.value) return false
+  const prevIds = new Set(assigningTag.value.serverIds ?? [])
+  const nextIds = assignSelectedIds.value
+  if (prevIds.size !== nextIds.size) return true
+  for (const id of nextIds) {
+    if (!prevIds.has(id)) return true
+  }
+  return false
+})
+
+function openAssignPanel(tag: ServerTag) {
+  assigningTag.value = tag
+  // Pre-populate with servers already assigned to this tag
+  assignSelectedIds.value = new Set(tag.serverIds ?? [])
+}
+
+function toggleAssignServer(serverId: number) {
+  const set = new Set(assignSelectedIds.value)
+  if (set.has(serverId)) {
+    set.delete(serverId)
+  } else {
+    set.add(serverId)
+  }
+  assignSelectedIds.value = set
+}
+
+async function confirmAssign() {
+  if (!assigningTag.value || !assignHasChanges.value) return
+
+  const tagId = assigningTag.value.id
+  const tagName = assigningTag.value.name
+  const prevIds = new Set(assigningTag.value.serverIds ?? [])
+  const nextIds = assignSelectedIds.value
+
+  const toAdd = Array.from(nextIds).filter((id) => !prevIds.has(id))
+  const toRemove = Array.from(prevIds).filter((id) => !nextIds.has(id))
+
+  try {
+    // Remove unchecked servers first (updates local state immediately)
+    for (const serverId of toRemove) {
+      await tagsStore.unassignTag(tagId, serverId)
+    }
+    // Add newly checked servers (calls fetchTags internally for full refresh)
+    if (toAdd.length > 0) {
+      await tagsStore.assignTag(tagId, toAdd)
+    } else {
+      // Only removals — refetch once to sync counts
+      await tagsStore.fetchTags()
+    }
+
+    const parts: string[] = []
+    if (toAdd.length > 0) parts.push(`${toAdd.length} added`)
+    if (toRemove.length > 0) parts.push(`${toRemove.length} removed`)
+    toastStore.showToast(`"${tagName}": ${parts.join(', ')}`, 'success')
+    assigningTag.value = null
+    assignSelectedIds.value = new Set()
+  } catch (err: any) {
+    toastStore.showToast(
+      err?.response?.data?.message || 'Failed to update assignments',
+      'error',
+    )
+  }
+}
 
 function close() {
   emit('update:modelValue', false)
@@ -379,6 +481,94 @@ onMounted(() => {
 
 .row-btn.danger:hover {
   background: var(--red-bg);
+}
+
+.assign-section {
+  border: 1px solid var(--accent2);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+  background: var(--bg3);
+}
+
+.assign-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.assign-header h3 {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.server-checklist {
+  display: grid;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.server-check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.server-check-item:hover {
+  background: var(--bg4);
+}
+
+.server-check-item input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
+.check-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.check-dot.online {
+  background: var(--green);
+}
+
+.check-dot.offline {
+  background: var(--red);
+}
+
+.check-dot.unknown {
+  background: var(--yellow);
+}
+
+.check-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.check-host {
+  color: var(--text3);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.assign-btn {
+  border-color: var(--accent2) !important;
+  color: var(--accent) !important;
 }
 
 .create-section {

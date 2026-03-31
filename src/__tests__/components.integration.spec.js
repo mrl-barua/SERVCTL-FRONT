@@ -122,7 +122,8 @@ describe('GaugeCard', () => {
       props: { value: 50, label: 'CPU' },
     })
     const svg = wrapper.find('.gauge-svg')
-    expect(svg.attributes('viewbox')).toBe('0 0 120 120')
+    const viewBox = svg.attributes('viewbox') || svg.attributes('viewBox')
+    expect(viewBox).toBe('0 0 120 120')
   })
 
   it('shows value percentage text', () => {

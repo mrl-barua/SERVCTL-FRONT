@@ -100,40 +100,32 @@ describe('serverGroups store', () => {
   })
 
   // ── addServersToGroup ─────────────────────────────────────────────────────
-  it('addServersToGroup posts and updates group in state', async () => {
+  it('addServersToGroup posts and refetches groups', async () => {
     store.groups = [
-      { id: 5, name: 'Prod', color: '#f25f5c', sortOrder: 0, members: [] },
+      { id: 5, name: 'Prod', color: '#f25f5c', sortOrder: 0, _count: { members: 0 } },
     ]
-    const updatedGroup = {
-      id: 5,
-      name: 'Prod',
-      color: '#f25f5c',
-      sortOrder: 0,
-      members: [
-        { id: 10, serverId: 1, groupId: 5 },
-        { id: 11, serverId: 2, groupId: 5 },
-      ],
-    }
-    apiClient.post.mockResolvedValueOnce({ data: updatedGroup })
+    apiClient.post.mockResolvedValueOnce({ data: { message: 'ok' } })
+    // Mock the refetch that happens inside addServersToGroup
+    apiClient.get.mockResolvedValueOnce({
+      data: [{ id: 5, name: 'Prod', color: '#f25f5c', sortOrder: 0, _count: { members: 2 } }],
+    })
 
     await store.addServersToGroup(5, [1, 2])
 
     expect(apiClient.post).toHaveBeenCalledWith('/server-groups/5/servers', { serverIds: [1, 2] })
-    expect(store.groups[0].members).toHaveLength(2)
+    expect(store.groups[0]._count.members).toBe(2)
   })
 
   // ── removeServerFromGroup ─────────────────────────────────────────────────
-  it('removeServerFromGroup deletes and removes member from local state', async () => {
+  it('removeServerFromGroup deletes and removes server from local serverIds', async () => {
     store.groups = [
       {
         id: 5,
         name: 'Prod',
         color: '#f25f5c',
         sortOrder: 0,
-        members: [
-          { id: 10, serverId: 1, groupId: 5 },
-          { id: 11, serverId: 2, groupId: 5 },
-        ],
+        serverIds: [1, 2],
+        _count: { members: 2 },
       },
     ]
     apiClient.delete.mockResolvedValueOnce({})
@@ -141,8 +133,9 @@ describe('serverGroups store', () => {
     await store.removeServerFromGroup(5, 1)
 
     expect(apiClient.delete).toHaveBeenCalledWith('/server-groups/5/servers/1')
-    expect(store.groups[0].members).toHaveLength(1)
-    expect(store.groups[0].members[0].serverId).toBe(2)
+    expect(store.groups[0].serverIds).toHaveLength(1)
+    expect(store.groups[0].serverIds[0]).toBe(2)
+    expect(store.groups[0]._count.members).toBe(1)
   })
 
   // ── reorderGroups ─────────────────────────────────────────────────────────
@@ -168,9 +161,9 @@ describe('serverGroups store', () => {
   // ── groupsForServer getter ────────────────────────────────────────────────
   it('groupsForServer returns only groups containing the given serverId', () => {
     store.groups = [
-      { id: 1, name: 'A', color: '#000', sortOrder: 0, members: [{ id: 10, serverId: 42, groupId: 1 }] },
-      { id: 2, name: 'B', color: '#111', sortOrder: 1, members: [{ id: 11, serverId: 99, groupId: 2 }] },
-      { id: 3, name: 'C', color: '#222', sortOrder: 2, members: [{ id: 12, serverId: 42, groupId: 3 }] },
+      { id: 1, name: 'A', color: '#000', sortOrder: 0, serverIds: [42] },
+      { id: 2, name: 'B', color: '#111', sortOrder: 1, serverIds: [99] },
+      { id: 3, name: 'C', color: '#222', sortOrder: 2, serverIds: [42] },
     ]
 
     const result = store.groupsForServer(42)
@@ -247,36 +240,29 @@ describe('serverTags store', () => {
   })
 
   // ── assignTag ─────────────────────────────────────────────────────────────
-  it('assignTag posts and updates tag in state with new server assignments', async () => {
-    store.tags = [{ id: 5, name: 'critical', color: '#f25f5c', servers: [] }]
-    const updatedTag = {
-      id: 5,
-      name: 'critical',
-      color: '#f25f5c',
-      servers: [
-        { id: 20, serverId: 1, tagId: 5 },
-        { id: 21, serverId: 2, tagId: 5 },
-      ],
-    }
-    apiClient.post.mockResolvedValueOnce({ data: updatedTag })
+  it('assignTag posts and refetches tags', async () => {
+    store.tags = [{ id: 5, name: 'critical', color: '#f25f5c', _count: { assignments: 0 } }]
+    apiClient.post.mockResolvedValueOnce({ data: { message: 'ok' } })
+    // Mock the refetch that happens inside assignTag
+    apiClient.get.mockResolvedValueOnce({
+      data: [{ id: 5, name: 'critical', color: '#f25f5c', _count: { assignments: 2 } }],
+    })
 
     await store.assignTag(5, [1, 2])
 
     expect(apiClient.post).toHaveBeenCalledWith('/server-tags/5/assign', { serverIds: [1, 2] })
-    expect(store.tags[0].servers).toHaveLength(2)
+    expect(store.tags[0]._count.assignments).toBe(2)
   })
 
   // ── unassignTag ───────────────────────────────────────────────────────────
-  it('unassignTag deletes and removes server assignment from local state', async () => {
+  it('unassignTag deletes and removes server from local serverIds', async () => {
     store.tags = [
       {
         id: 5,
         name: 'critical',
         color: '#f25f5c',
-        servers: [
-          { id: 20, serverId: 1, tagId: 5 },
-          { id: 21, serverId: 2, tagId: 5 },
-        ],
+        serverIds: [1, 2],
+        _count: { assignments: 2 },
       },
     ]
     apiClient.delete.mockResolvedValueOnce({})
@@ -284,16 +270,17 @@ describe('serverTags store', () => {
     await store.unassignTag(5, 1)
 
     expect(apiClient.delete).toHaveBeenCalledWith('/server-tags/5/servers/1')
-    expect(store.tags[0].servers).toHaveLength(1)
-    expect(store.tags[0].servers[0].serverId).toBe(2)
+    expect(store.tags[0].serverIds).toHaveLength(1)
+    expect(store.tags[0].serverIds[0]).toBe(2)
+    expect(store.tags[0]._count.assignments).toBe(1)
   })
 
   // ── tagsForServer getter ──────────────────────────────────────────────────
   it('tagsForServer returns only tags assigned to the given serverId', () => {
     store.tags = [
-      { id: 1, name: 'critical', color: '#f25f5c', servers: [{ id: 10, serverId: 42, tagId: 1 }] },
-      { id: 2, name: 'backup', color: '#4f8ef7', servers: [{ id: 11, serverId: 99, tagId: 2 }] },
-      { id: 3, name: 'monitored', color: '#3ecf8e', servers: [{ id: 12, serverId: 42, tagId: 3 }] },
+      { id: 1, name: 'critical', color: '#f25f5c', serverIds: [42] },
+      { id: 2, name: 'backup', color: '#4f8ef7', serverIds: [99] },
+      { id: 3, name: 'monitored', color: '#3ecf8e', serverIds: [42] },
     ]
 
     const result = store.tagsForServer(42)

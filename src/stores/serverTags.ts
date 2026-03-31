@@ -1,17 +1,12 @@
 import { defineStore } from 'pinia'
 import apiClient from '../services/http'
 
-export interface ServerTagAssignment {
-  id: number
-  serverId: number
-  tagId: number
-}
-
 export interface ServerTag {
   id: number
   name: string
   color: string
-  servers: ServerTagAssignment[]
+  serverIds?: number[]
+  _count?: { assignments: number }
   createdAt?: string
   updatedAt?: string
 }
@@ -25,9 +20,7 @@ export const useServerTagsStore = defineStore('serverTags', {
 
   getters: {
     tagsForServer: (state) => (serverId: number) => {
-      return state.tags.filter((t) =>
-        t.servers?.some((s) => s.serverId === serverId),
-      )
+      return state.tags.filter((t) => t.serverIds?.includes(serverId))
     },
   },
 
@@ -91,15 +84,12 @@ export const useServerTagsStore = defineStore('serverTags', {
     async assignTag(tagId: number, serverIds: number[]) {
       this.error = null
       try {
-        const { data } = await apiClient.post(
+        await apiClient.post(
           `/server-tags/${tagId}/assign`,
           { serverIds },
         )
-        const idx = this.tags.findIndex((t) => t.id === tagId)
-        if (idx !== -1) {
-          this.tags[idx] = data
-        }
-        return data as ServerTag
+        // Refetch all tags to get updated counts and serverIds
+        await this.fetchTags()
       } catch (err: any) {
         this.error =
           err?.response?.data?.message || 'Failed to assign server tag'
@@ -113,9 +103,13 @@ export const useServerTagsStore = defineStore('serverTags', {
         await apiClient.delete(
           `/server-tags/${tagId}/servers/${serverId}`,
         )
+        // Update local state immediately for responsiveness
         const tag = this.tags.find((t) => t.id === tagId)
         if (tag) {
-          tag.servers = tag.servers.filter((s) => s.serverId !== serverId)
+          tag.serverIds = (tag.serverIds ?? []).filter((id) => id !== serverId)
+          if (tag._count) {
+            tag._count.assignments = Math.max(0, (tag._count.assignments ?? 0) - 1)
+          }
         }
       } catch (err: any) {
         this.error =

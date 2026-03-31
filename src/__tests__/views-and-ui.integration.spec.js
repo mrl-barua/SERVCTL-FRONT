@@ -7,7 +7,15 @@ import { nextTick } from 'vue'
 // Mock HTTP client before any store imports
 vi.mock('../services/http', () => ({
   default: {
-    get: vi.fn().mockResolvedValue({ data: [] }),
+    get: vi.fn().mockImplementation((url) => {
+      if (typeof url === 'string' && (url === '/servers' || url.startsWith('/servers'))) {
+        return Promise.resolve({ data: { items: [], total: 0, page: 1, limit: 20 } })
+      }
+      if (url === '/config') {
+        return Promise.resolve({ data: { mode: 'local', features: {} } })
+      }
+      return Promise.resolve({ data: [] })
+    }),
     post: vi.fn().mockResolvedValue({ data: {} }),
     patch: vi.fn().mockResolvedValue({ data: {} }),
     delete: vi.fn().mockResolvedValue({ data: {} }),
@@ -129,6 +137,19 @@ import ServerCard from '../components/servers/ServerCard.vue'
 import App from '../App.vue'
 import { useServersStore } from '../stores/servers'
 import { factories } from './helpers'
+
+// Suppress unhandled rejections from background store fetches during tests
+const originalConsoleWarn = console.warn
+beforeAll(() => {
+  console.warn = (...args) => {
+    if (typeof args[0] === 'string' && args[0].includes('Unhandled error')) return
+    originalConsoleWarn(...args)
+  }
+  process.on('unhandledRejection', () => {})
+})
+afterAll(() => {
+  console.warn = originalConsoleWarn
+})
 
 // ---------- Shared helpers ----------
 
