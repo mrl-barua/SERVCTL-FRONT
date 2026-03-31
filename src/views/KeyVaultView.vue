@@ -87,8 +87,10 @@
           placeholder="optional"
         />
         <div class="actions">
-          <button class="btn" @click="closeUpload">Cancel</button>
-          <button class="btn primary" @click="uploadKey">Upload & Save</button>
+          <button class="btn" @click="closeUpload" :disabled="uploading">Cancel</button>
+          <button class="btn primary" @click="uploadKey" :disabled="uploading">
+            {{ uploading ? "Uploading..." : "Upload & Save" }}
+          </button>
         </div>
         <p v-if="uploadFingerprint" class="fingerprint">
           Fingerprint: {{ uploadFingerprint }}
@@ -136,6 +138,7 @@ const toastStore = useToastStore();
 const keys = ref([]);
 const loading = ref(false);
 const showUpload = ref(false);
+const uploading = ref(false);
 const uploadFingerprint = ref("");
 
 const uploadForm = reactive({
@@ -195,21 +198,26 @@ async function uploadKey() {
     return;
   }
 
+  if (uploading.value) return;
+  uploading.value = true;
+
   try {
-    const { data } = await apiClient.post("/keys", {
+    await apiClient.post("/keys", {
       label: uploadForm.label.trim(),
       privateKey: uploadForm.privateKey,
       passphrase: uploadForm.passphrase || undefined,
     });
 
-    uploadFingerprint.value = data.fingerprint;
     toastStore.showToast("SSH key uploaded successfully", "success");
+    closeUpload();
     await fetchKeys();
   } catch (error) {
     toastStore.showToast(
       error?.response?.data?.message || "Upload failed",
       "error",
     );
+  } finally {
+    uploading.value = false;
   }
 }
 
