@@ -54,6 +54,17 @@
         </button>
       </router-link>
 
+      <router-link to="/database" custom v-slot="{ isActive, navigate }">
+        <button
+          @click="navigate"
+          :class="['nav-item', { active: isActive }]"
+          :data-tooltip="collapsed ? 'Database' : ''"
+        >
+          <span class="icon">⊟</span>
+          <template v-if="!collapsed">Database</template>
+        </button>
+      </router-link>
+
       <router-link to="/keys" custom v-slot="{ isActive, navigate }">
         <button
           @click="navigate"

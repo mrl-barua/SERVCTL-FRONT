@@ -9,6 +9,7 @@ import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
 import ResetPasswordView from "../views/ResetPasswordView.vue";
 import AuthCallbackView from "../views/AuthCallbackView.vue";
+import DatabaseView from "../views/DatabaseView.vue";
 import KeyVaultView from "../views/KeyVaultView.vue";
 import InstallGuideView from "../views/InstallGuideView.vue";
 
@@ -50,6 +51,12 @@ const routes = [
     path: "/logs",
     name: "logs",
     component: LogsView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/database",
+    name: "database",
+    component: DatabaseView,
     meta: { requiresAuth: true },
   },
   {
