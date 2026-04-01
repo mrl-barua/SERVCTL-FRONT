@@ -1,6 +1,24 @@
 <template>
-  <div class="db-ide">
-    <div class="ide-toolbar">
+  <div class="db-ide" :class="{ 'focus-mode': focusMode }">
+    <!-- Focus mode floating bar -->
+    <div v-if="focusMode" class="focus-bar">
+      <span class="focus-info">
+        <span class="focus-conn">{{ activeConnectionName }}</span>
+        <span v-if="selectedDatabase" class="focus-db">/ {{ selectedDatabase }}</span>
+      </span>
+      <div class="focus-actions">
+        <button
+          class="editor-btn run"
+          @click="runQuery"
+          :disabled="!dbStore.connected || dbStore.queryLoading"
+        >
+          {{ dbStore.queryLoading ? 'Running...' : '▶ Run' }}
+        </button>
+        <button class="editor-btn" @click="focusMode = false" title="Exit focus (Esc)">Exit Focus</button>
+      </div>
+    </div>
+
+    <div v-show="!focusMode" class="ide-toolbar">
       <div class="toolbar-left">
         <select
           v-model.number="selectedConnectionId"
@@ -44,7 +62,7 @@
     </div>
 
     <div class="ide-body">
-      <aside class="ide-sidebar">
+      <aside v-show="!focusMode" class="ide-sidebar">
         <DatabaseSidebar
           :connected="dbStore.connected"
           :databases="dbStore.databases"
@@ -62,8 +80,11 @@
             :can-execute="dbStore.connected"
             :db-type="dbStore.activeDbType"
             :query-history="dbStore.queryHistory"
+            :schema-tables="schemaTables"
+            :schema-columns="schemaColumns"
             @execute="runQuery"
             @clear="queryText = ''"
+            @toggle-focus="toggleFocus"
           />
         </div>
         <div class="resize-handle" @mousedown="startResize"></div>
@@ -81,7 +102,7 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useDatabaseStore } from '../stores/database'
 import { useToastStore } from '../stores/toast'
 import DatabaseSidebar from '../components/database/DatabaseSidebar.vue'
@@ -98,14 +119,39 @@ const queryText = ref('')
 const showConnectionModal = ref(false)
 const connecting = ref(false)
 const resultsHeight = ref(300)
+const focusMode = ref(false)
+
+const activeConnectionName = computed(() => {
+  const conn = dbStore.connections.find((c) => c.id === dbStore.activeConnectionId)
+  return conn ? conn.name : ''
+})
+
+const schemaTables = computed(() => dbStore.tables || [])
+const schemaColumns = computed(() => (dbStore.columns || []).map((c) => c.name))
 
 onMounted(async () => {
   await dbStore.fetchConnections()
+  window.addEventListener('keydown', handleGlobalKey)
 })
 
 onBeforeUnmount(() => {
   dbStore.disconnect()
+  window.removeEventListener('keydown', handleGlobalKey)
 })
+
+function handleGlobalKey(e) {
+  if (e.key === 'Escape' && focusMode.value) {
+    focusMode.value = false
+  }
+  if (e.key === 'F11') {
+    e.preventDefault()
+    toggleFocus()
+  }
+}
+
+function toggleFocus() {
+  focusMode.value = !focusMode.value
+}
 
 async function handleConnectionChange() {
   if (!selectedConnectionId.value) {
@@ -116,7 +162,6 @@ async function handleConnectionChange() {
   selectedDatabase.value = ''
   dbStore.connectToDb(selectedConnectionId.value)
 
-  // Wait for connected event
   const checkConnected = setInterval(() => {
     if (dbStore.connected) {
       clearInterval(checkConnected)
@@ -130,7 +175,6 @@ async function handleConnectionChange() {
     }
   }, 200)
 
-  // Timeout after 15s
   setTimeout(() => {
     clearInterval(checkConnected)
     if (!dbStore.connected) {
@@ -163,7 +207,7 @@ function browseTable({ database, table }) {
   if (dbStore.activeDbType === 'mongodb') {
     queryText.value = `db.${table}.find({}).limit(100)`
   } else {
-    queryText.value = `SELECT * FROM \`${table}\` LIMIT 100;`
+    queryText.value = `SELECT * FROM "${table}" LIMIT 100;`
   }
   runQuery()
 }
@@ -180,11 +224,8 @@ async function handleDeleteConnection() {
 }
 
 // ── Resize handle ───────────────────────────────────────
-let resizing = false
-
 function startResize(e) {
   e.preventDefault()
-  resizing = true
   const startY = e.clientY
   const startH = resultsHeight.value
 
@@ -193,7 +234,6 @@ function startResize(e) {
     resultsHeight.value = Math.max(100, Math.min(600, startH + delta))
   }
   function onUp() {
-    resizing = false
     document.removeEventListener('mousemove', onMove)
     document.removeEventListener('mouseup', onUp)
     document.body.style.cursor = ''
@@ -215,6 +255,70 @@ function startResize(e) {
   margin: -20px;
 }
 
+/* ── Focus mode ── */
+.focus-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.focus-info {
+  font-size: 11px;
+  color: var(--text2);
+  font-family: var(--font-mono);
+}
+
+.focus-conn {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.focus-db {
+  color: var(--accent);
+}
+
+.focus-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.editor-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: var(--bg3);
+  color: var(--text2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.editor-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.editor-btn.run {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.editor-btn.run:hover {
+  background: var(--accent2);
+}
+
+.editor-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Toolbar ── */
 .ide-toolbar {
   display: flex;
   align-items: center;
@@ -293,6 +397,7 @@ function startResize(e) {
   color: var(--red);
 }
 
+/* ── IDE Body ── */
 .ide-body {
   flex: 1;
   display: flex;

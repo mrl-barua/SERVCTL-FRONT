@@ -18,6 +18,9 @@ export const useDatabaseStore = defineStore('database', () => {
   const databases = ref([])
   const tables = ref([])
   const columns = ref([])
+  const views = ref([])
+  const types = ref([])
+  const indexes = ref([])
 
   // Query state
   const results = ref(null)
@@ -108,6 +111,18 @@ export const useDatabaseStore = defineStore('database', () => {
       columns.value = payload.columns
     })
 
+    socket.on('database:views-list', (payload) => {
+      views.value = payload.views
+    })
+
+    socket.on('database:types-list', (payload) => {
+      types.value = payload.types
+    })
+
+    socket.on('database:indexes-list', (payload) => {
+      indexes.value = payload.indexes
+    })
+
     socket.on('disconnect', () => {
       connected.value = false
     })
@@ -115,12 +130,14 @@ export const useDatabaseStore = defineStore('database', () => {
 
   function connectToDb(connectionId) {
     ensureSocket()
-    // Reset state
     connected.value = false
     results.value = null
     databases.value = []
     tables.value = []
     columns.value = []
+    views.value = []
+    types.value = []
+    indexes.value = []
     queryError.value = null
     activeConnectionId.value = connectionId
     socket.emit('database:connect', { connectionId })
@@ -131,7 +148,6 @@ export const useDatabaseStore = defineStore('database', () => {
     queryLoading.value = true
     queryError.value = null
     socket.emit('database:query', { query, database })
-    // Add to history
     queryHistory.value.unshift({
       query,
       database,
@@ -160,6 +176,21 @@ export const useDatabaseStore = defineStore('database', () => {
     socket.emit('database:columns', { database, table })
   }
 
+  function fetchViews(database) {
+    if (!socket || !connected.value) return
+    socket.emit('database:views', { database })
+  }
+
+  function fetchTypes(database) {
+    if (!socket || !connected.value) return
+    socket.emit('database:types', { database })
+  }
+
+  function fetchIndexes(database, table) {
+    if (!socket || !connected.value) return
+    socket.emit('database:indexes', { database, table })
+  }
+
   function disconnect() {
     connected.value = false
     activeConnectionId.value = null
@@ -169,6 +200,9 @@ export const useDatabaseStore = defineStore('database', () => {
     databases.value = []
     tables.value = []
     columns.value = []
+    views.value = []
+    types.value = []
+    indexes.value = []
     if (socket) {
       socket.disconnect()
       socket = null
@@ -191,6 +225,9 @@ export const useDatabaseStore = defineStore('database', () => {
     databases,
     tables,
     columns,
+    views,
+    types,
+    indexes,
     results,
     queryLoading,
     queryError,
@@ -204,6 +241,9 @@ export const useDatabaseStore = defineStore('database', () => {
     fetchDatabases,
     fetchTables,
     fetchColumns,
+    fetchViews,
+    fetchTypes,
+    fetchIndexes,
     disconnect,
     clearResults,
   }
