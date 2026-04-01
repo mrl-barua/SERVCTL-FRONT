@@ -15,6 +15,14 @@ app.use(router)
 const authStore = useAuthStore(pinia)
 const appStore = useAppStore(pinia)
 
-Promise.allSettled([authStore.initializeAuth(), appStore.initializeConfig()]).finally(() => {
-    app.mount('#app')
+// Fire background init immediately — never blocks rendering.
+// The router guard reads localStorage directly so auth is always correct.
+authStore.initializeAuth().catch(() => {})
+appStore.initializeConfig().catch(() => {})
+
+// router.isReady() resolves in < 1 ms once the initial navigation
+// (beforeEach guards + route matching) is complete.
+// Without this, RouterView has no resolved route on first render → blank page.
+router.isReady().then(() => {
+  app.mount('#app')
 })
