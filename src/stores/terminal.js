@@ -72,6 +72,9 @@ export const useTerminalStore = defineStore('terminal', () => {
       })
     }
 
+    if (connectedServerId.value !== serverId) {
+      lines.value = []
+    }
     connectedServerId.value = serverId
     socket.emit('terminal:connect', { serverId })
   }
